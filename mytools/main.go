@@ -14,18 +14,21 @@ func main() {
 		fmt.Printf("vaibhav 1 %v", err)
 		return
 	}
+	fmt.Printf("vaibhav 2 %v", tpm)
 	defer tpm.Close()
 
 	// check AK (EK signing) cert
 	gceAk, err := client.GceAttestationKeyECC(tpm)
 	if err != nil {
-		fmt.Printf("vaibhav 2 %v", err)
+		fmt.Printf("vaibhav 3 %v", err)
 		return
 	}
+	fmt.Printf("vaibhav 4 %v", gceAk)
 	if gceAk.Cert() == nil {
-		fmt.Printf("vaibhav 3 failed to find AKCert on this VM: try creating a new VM or contacting support")
+		fmt.Printf("vaibhav 5 failed to find AKCert on this VM: try creating a new VM or contacting support")
 		return
 	}
+	fmt.Printf("vaibhav 6 %v", gceAk.Cert())
 	gceAk.Close()
-	fmt.Printf("vaibhav 4")
+	fmt.Printf("vaibhav 7")
 }
