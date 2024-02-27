@@ -104,7 +104,7 @@ func GceAttestationKeyRSA(rw io.ReadWriter) (*Key, error) {
 // the Endorsement Hierarchy and its template loaded from GceAKTemplateNVIndexECC.
 func GceAttestationKeyECC(rw io.ReadWriter) (*Key, error) {
 	akEcc, err := EndorsementKeyFromNvIndex(rw, GceAKTemplateNVIndexECC)
-	fmt.Printf("vaibhav 1 GceAttestationKeyECC akEcc: %v", akEcc)
+	fmt.Println("vaibhav 1 GceAttestationKeyECC akEcc: ", akEcc)
 	if err != nil {
 		return nil, err
 	}
@@ -133,10 +133,14 @@ func LoadCachedKey(rw io.ReadWriter, cachedHandle tpmutil.Handle, keySession Ses
 // using the template stored at the provided nvdata index.
 func KeyFromNvIndex(rw io.ReadWriter, parent tpmutil.Handle, idx uint32) (*Key, error) {
 	data, err := tpm2.NVReadEx(rw, tpmutil.Handle(idx), tpm2.HandleOwner, "", 0)
+	fmt.Println("vaibhav 1 KeyFromNvIndex data: ", data)
+	fmt.Println("vaibhav 1 KeyFromNvIndex err: ", err)
 	if err != nil {
 		return nil, fmt.Errorf("read error at index %d: %w", idx, err)
 	}
 	template, err := tpm2.DecodePublic(data)
+	fmt.Println("vaibhav 2 KeyFromNvIndex template: ", template)
+	fmt.Println("vaibhav 2 KeyFromNvIndex err: ", err)
 	if err != nil {
 		return nil, fmt.Errorf("index %d data was not a TPM key template: %w", idx, err)
 	}
@@ -511,15 +515,15 @@ func (k *Key) SetCert(cert *x509.Certificate) error {
 // return an error.
 func (k *Key) trySetCertificateFromNvram(index uint32) error {
 	certASN1, err := tpm2.NVReadEx(k.rw, tpmutil.Handle(index), tpm2.HandleOwner, "", 0)
-	fmt.Printf("vaibhav 1 trySetCertificateFromNvram certASN1: %v", certASN1)
-	fmt.Printf("vaibhav 1 trySetCertificateFromNvram err: %v", err)
+	fmt.Println("vaibhav 1 trySetCertificateFromNvram certASN1: ", certASN1)
+	fmt.Println("vaibhav 1 trySetCertificateFromNvram err: ", err)
 	if err != nil {
 		// Either the cert data is missing, or we are not allowed to read it
 		return nil
 	}
 	x509Cert, err := x509.ParseCertificate(certASN1)
-	fmt.Printf("vaibhav 2 trySetCertificateFromNvram x509Cert: %v", x509Cert)
-	fmt.Printf("vaibhav 2 trySetCertificateFromNvram err: %v", err)
+	fmt.Println("vaibhav 2 trySetCertificateFromNvram x509Cert: ", x509Cert)
+	fmt.Println("vaibhav 2 trySetCertificateFromNvram err: ", err)
 	if err != nil {
 		return fmt.Errorf("failed to parse certificate from NV memory: %w", err)
 	}

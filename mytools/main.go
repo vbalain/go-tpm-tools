@@ -8,27 +8,27 @@ import (
 )
 
 func main() {
-	fmt.Printf("vaibhav 0")
+	fmt.Println("vaibhav 0 ")
 	tpm, err := tpm2.OpenTPM("/dev/tpmrm0")
 	if err != nil {
-		fmt.Printf("vaibhav 1 %v", err)
+		fmt.Println("vaibhav 1 ", err)
 		return
 	}
-	fmt.Printf("vaibhav 2 %v", tpm)
+	fmt.Println("vaibhav 2 ", tpm)
 	defer tpm.Close()
 
 	// check AK (EK signing) cert
 	gceAk, err := client.GceAttestationKeyECC(tpm)
 	if err != nil {
-		fmt.Printf("vaibhav 3 %v", err)
+		fmt.Println("vaibhav 3 ", err)
 		return
 	}
-	fmt.Printf("vaibhav 4 %v", gceAk)
+	fmt.Println("vaibhav 4 ", gceAk)
 	if gceAk.Cert() == nil {
-		fmt.Printf("vaibhav 5 failed to find AKCert on this VM: try creating a new VM or contacting support")
+		fmt.Println("vaibhav 5 failed to find AKCert on this VM: try creating a new VM or contacting support")
 		return
 	}
-	fmt.Printf("vaibhav 6 %v", gceAk.Cert())
+	fmt.Println("vaibhav 6 ", gceAk.Cert())
 	gceAk.Close()
-	fmt.Printf("vaibhav 7")
+	fmt.Println("vaibhav 7")
 }
