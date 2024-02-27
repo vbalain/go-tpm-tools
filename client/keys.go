@@ -104,6 +104,7 @@ func GceAttestationKeyRSA(rw io.ReadWriter) (*Key, error) {
 // the Endorsement Hierarchy and its template loaded from GceAKTemplateNVIndexECC.
 func GceAttestationKeyECC(rw io.ReadWriter) (*Key, error) {
 	akEcc, err := EndorsementKeyFromNvIndex(rw, GceAKTemplateNVIndexECC)
+	fmt.Printf("vaibhav 1 GceAttestationKeyECC akEcc: %v", akEcc)
 	if err != nil {
 		return nil, err
 	}
@@ -510,11 +511,15 @@ func (k *Key) SetCert(cert *x509.Certificate) error {
 // return an error.
 func (k *Key) trySetCertificateFromNvram(index uint32) error {
 	certASN1, err := tpm2.NVReadEx(k.rw, tpmutil.Handle(index), tpm2.HandleOwner, "", 0)
+	fmt.Printf("vaibhav 1 trySetCertificateFromNvram certASN1: %v", certASN1)
+	fmt.Printf("vaibhav 1 trySetCertificateFromNvram err: %v", err)
 	if err != nil {
 		// Either the cert data is missing, or we are not allowed to read it
 		return nil
 	}
 	x509Cert, err := x509.ParseCertificate(certASN1)
+	fmt.Printf("vaibhav 2 trySetCertificateFromNvram x509Cert: %v", x509Cert)
+	fmt.Printf("vaibhav 2 trySetCertificateFromNvram err: %v", err)
 	if err != nil {
 		return fmt.Errorf("failed to parse certificate from NV memory: %w", err)
 	}
