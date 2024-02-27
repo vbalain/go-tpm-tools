@@ -199,8 +199,12 @@ func NewKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public) (k *K
 		// TODO add support for normal objects with Create() and Load()
 		return nil, fmt.Errorf("unsupported parent handle: %x", parent)
 	}
+	fmt.Println("vaibhav 1 NewKey isHierarchy(parent)")
 
 	handle, pubArea, _, _, _, _, err := tpm2.CreatePrimaryEx(rw, parent, tpm2.PCRSelection{}, "", "", template)
+	fmt.Println("vaibhav 2 NewKey handle: ", handle)
+	fmt.Println("vaibhav 2 NewKey pubArea: ", pubArea)
+	fmt.Println("vaibhav 2 NewKey err: ", err)
 	if err != nil {
 		return nil, err
 	}
@@ -212,8 +216,10 @@ func NewKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public) (k *K
 
 	k = &Key{rw: rw, handle: handle}
 	if k.pubArea, err = tpm2.DecodePublic(pubArea); err != nil {
+		fmt.Println("vaibhav 3 NewKey err: ", err)
 		return
 	}
+	fmt.Println("vaibhav 3 NewKey k.pubArea: ", k.pubArea)
 	return k, k.finish()
 }
 
