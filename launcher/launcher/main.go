@@ -13,7 +13,6 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"time"
 
 	"cloud.google.com/go/compute/metadata"
 	"github.com/containerd/containerd"
@@ -25,7 +24,6 @@ import (
 	"github.com/google/go-tpm-tools/launcher/launcherfile"
 	"github.com/google/go-tpm-tools/launcher/spec"
 	"github.com/google/go-tpm/legacy/tpm2"
-	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
@@ -201,78 +199,89 @@ func startLauncher(launchSpec spec.LaunchSpec, serialConsole *os.File) error {
 	}
 	defer r.Close(ctx)
 
-	privateKey, err := wgtypes.GeneratePrivateKey()
-	if err != nil {
-		return fmt.Errorf("wgtypes: failed to generate private key: %v", err)
-	}
-	publicKey := privateKey.PublicKey()
+	// peerPrivateKey, err := wgtypes.GeneratePrivateKey()
+	// if err != nil {
+	// 	return fmt.Errorf("wgtypes: failed to generate peer private key: %v", err)
+	// }
+	// peerPublicKey := peerPrivateKey.PublicKey()
+	// peerPskKey, err := wgtypes.GenerateKey()
+	// if err != nil {
+	// 	return fmt.Errorf("wgtypes: failed to generate peer psk key: %v", err)
+	// }
+	// dur := 10 * time.Second
+	// var peerConfigs []wgtypes.PeerConfig
+	// var peerAllowedIPs []net.IPNet
+	// peerIP := net.IPv4(34, 171, 172, 249)
+	// // peerIP := net.IPv4(34, 70, 64, 176)
+	// peerPort := 51820
+	// peerAllowedIPs = append(peerAllowedIPs, net.IPNet{IP: net.ParseIP("10.27.0.0")})
 
-	pskKey, err := wgtypes.GenerateKey()
-	if err != nil {
-		return fmt.Errorf("wgtypes: failed to generate psk key: %v", err)
-	}
-	/*
-		sudo ip link add dev wg0 type wireguard
-		sudo ip address add dev wg0 10.27.0.0/24
-		sudo iptables -I INPUT 1 -i wg0 -j ACCEPT
-		sudo /sbin/iptables -A INPUT -p udp --dport 51820 -j ACCEPT
-		sudo ip link set up dev wg0
-	*/
+	// privateKey, err := wgtypes.GeneratePrivateKey()
+	// if err != nil {
+	// 	return fmt.Errorf("wgtypes: failed to generate private key: %v", err)
+	// }
+	// publicKey := privateKey.PublicKey()
+	// pskKey, err := wgtypes.GenerateKey()
+	// if err != nil {
+	// 	return fmt.Errorf("wgtypes: failed to generate psk key: %v", err)
+	// }
+	// fmt.Println("(1) publicKey, privateKey, pskKey: ", publicKey, privateKey, pskKey)
+	// fmt.Println("(1+) publicKey, privateKey, pskKey: ", publicKey.String(), privateKey.String(), pskKey.String())
 
-	dur := 10 * time.Second
-	var peerConfigs []wgtypes.PeerConfig
-	var peerAllowedIPs []net.IPNet
-	// peerIP := net.IPv4(146, 148, 82, 244)
-	peerIP := net.IPv4(34, 70, 64, 176)
-	peerPort := 51820
-	peerAllowedIPs = append(peerAllowedIPs, net.IPNet{IP: net.ParseIP("10.27.0.0"), Mask: net.CIDRMask(128, 128)})
-	peerConfig := wgtypes.PeerConfig{
-		PublicKey:         publicKey,
-		PresharedKey:      &pskKey,
-		ReplaceAllowedIPs: true,
-		Endpoint: &net.UDPAddr{
-			IP:   peerIP,
-			Port: peerPort,
-		},
-		PersistentKeepaliveInterval: &dur,
-		AllowedIPs:                  peerAllowedIPs,
-	}
-	peerConfigs = append(peerConfigs, peerConfig)
+	// peerConfig := wgtypes.PeerConfig{
+	// 	PublicKey: publicKey,
+	// 	// PresharedKey:      &pskKey,
+	// 	ReplaceAllowedIPs: true,
+	// 	Endpoint: &net.UDPAddr{
+	// 		IP:   peerIP,
+	// 		Port: peerPort,
+	// 	},
+	// 	PersistentKeepaliveInterval: &dur,
+	// 	AllowedIPs:                  peerAllowedIPs,
+	// }
+	// peerConfigs = append(peerConfigs, peerConfig)
+	// /*
+	// 	sudo ip link add dev wg0 type wireguard
+	// 	sudo ip address add dev wg0 10.27.0.0/24
+	// 	sudo iptables -I INPUT 1 -i wg0 -j ACCEPT
+	// 	sudo /sbin/iptables -A INPUT -p udp --dport 51820 -j ACCEPT
+	// 	sudo ip link set up dev wg0
+	// */
 
-	listenPort := 51820
-	fireWallMask := 0
-	cfg := wgtypes.Config{
-		PrivateKey:   &privateKey,
-		ListenPort:   &listenPort,
-		FirewallMark: &fireWallMask,
-		ReplacePeers: true,
-		Peers:        peerConfigs,
-	}
+	// listenPort := 51820
+	// fireWallMask := 0
+	// cfg := wgtypes.Config{
+	// 	PrivateKey:   &privateKey,
+	// 	ListenPort:   &listenPort,
+	// 	FirewallMark: &fireWallMask,
+	// 	ReplacePeers: true,
+	// 	Peers:        peerConfigs,
+	// }
 
-	wgctrlClient, err := wgctrl.New()
-	if err != nil {
-		return fmt.Errorf("wgctrl: failed to create New wgctrl: %v", err)
-	}
+	// wgctrlClient, err := wgctrl.New()
+	// if err != nil {
+	// 	return fmt.Errorf("wgctrl: failed to create New wgctrl: %v", err)
+	// }
 
-	device, err := wgctrlClient.Device("wg0")
-	if err != nil {
-		return fmt.Errorf("wgctrl: failed to get wg0 device: %v", err)
-	}
+	// device, err := wgctrlClient.Device("wg0")
+	// if err != nil {
+	// 	return fmt.Errorf("wgctrlClient: failed to get wg0 device: %v", err)
+	// }
 
-	if err := wgctrlClient.ConfigureDevice(device.Name, cfg); err != nil {
-		return fmt.Errorf("failed to configure on %q: %v", device.Name, err)
-	}
+	// if err := wgctrlClient.ConfigureDevice(device.Name, cfg); err != nil {
+	// 	return fmt.Errorf("wgctrlClient: failed to configure on %q: %v", device.Name, err)
+	// }
 
-	_, err = wgctrlClient.Device(device.Name)
-	if err != nil {
-		return fmt.Errorf("failed to get updated device: %v", err)
-	}
+	// _, err = wgctrlClient.Device(device.Name)
+	// if err != nil {
+	// 	return fmt.Errorf("wgctrlClient: failed to get updated device: %v", err)
+	// }
 
-	printDevice(device)
+	// printDevice(device)
 
-	for _, p := range device.Peers {
-		printPeer(p)
-	}
+	// for _, p := range device.Peers {
+	// 	printPeer(p)
+	// }
 
 	return r.Run(ctx)
 }
@@ -280,17 +289,19 @@ func startLauncher(launchSpec spec.LaunchSpec, serialConsole *os.File) error {
 func printDevice(d *wgtypes.Device) {
 	const f = `interface: %s (%s)
   public key: %s
-  private key: (hidden)
+  private key: %s
   listening port: %d
-
-`
+  peers count: %d`
 
 	fmt.Printf(
 		f,
 		d.Name,
 		d.Type.String(),
-		d.PublicKey.String(),
-		d.ListenPort)
+		d.PublicKey,
+		d.PrivateKey,
+		d.ListenPort,
+		len(d.Peers))
+	fmt.Println("**********")
 }
 
 func printPeer(p wgtypes.Peer) {
@@ -298,13 +309,11 @@ func printPeer(p wgtypes.Peer) {
   endpoint: %s
   allowed ips: %s
   latest handshake: %s
-  transfer: %d B received, %d B sent
-
-`
+  transfer: %d B received, %d B sent`
 
 	fmt.Printf(
 		f,
-		p.PublicKey.String(),
+		p.PublicKey,
 		// TODO(mdlayher): get right endpoint with getnameinfo.
 		p.Endpoint.String(),
 		ipsString(p.AllowedIPs),
@@ -312,6 +321,7 @@ func printPeer(p wgtypes.Peer) {
 		p.ReceiveBytes,
 		p.TransmitBytes,
 	)
+	fmt.Println("**********")
 }
 
 func ipsString(ipns []net.IPNet) string {

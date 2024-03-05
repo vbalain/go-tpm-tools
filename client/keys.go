@@ -104,7 +104,6 @@ func GceAttestationKeyRSA(rw io.ReadWriter) (*Key, error) {
 // the Endorsement Hierarchy and its template loaded from GceAKTemplateNVIndexECC.
 func GceAttestationKeyECC(rw io.ReadWriter) (*Key, error) {
 	akEcc, err := EndorsementKeyFromNvIndex(rw, GceAKTemplateNVIndexECC)
-	fmt.Println("vaibhav 1 GceAttestationKeyECC akEcc: ", akEcc)
 	if err != nil {
 		return nil, err
 	}
@@ -133,14 +132,10 @@ func LoadCachedKey(rw io.ReadWriter, cachedHandle tpmutil.Handle, keySession Ses
 // using the template stored at the provided nvdata index.
 func KeyFromNvIndex(rw io.ReadWriter, parent tpmutil.Handle, idx uint32) (*Key, error) {
 	data, err := tpm2.NVReadEx(rw, tpmutil.Handle(idx), tpm2.HandleOwner, "", 0)
-	fmt.Println("vaibhav 1 KeyFromNvIndex data: ", data)
-	fmt.Println("vaibhav 1 KeyFromNvIndex err: ", err)
 	if err != nil {
 		return nil, fmt.Errorf("read error at index %d: %w", idx, err)
 	}
 	template, err := tpm2.DecodePublic(data)
-	fmt.Println("vaibhav 2 KeyFromNvIndex template: ", template)
-	fmt.Println("vaibhav 2 KeyFromNvIndex err: ", err)
 	if err != nil {
 		return nil, fmt.Errorf("index %d data was not a TPM key template: %w", idx, err)
 	}
@@ -199,12 +194,8 @@ func NewKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public) (k *K
 		// TODO add support for normal objects with Create() and Load()
 		return nil, fmt.Errorf("unsupported parent handle: %x", parent)
 	}
-	fmt.Println("vaibhav 1 NewKey isHierarchy(parent)")
 
 	handle, pubArea, _, _, _, _, err := tpm2.CreatePrimaryEx(rw, parent, tpm2.PCRSelection{}, "", "", template)
-	fmt.Println("vaibhav 2 NewKey handle: ", handle)
-	fmt.Println("vaibhav 2 NewKey pubArea: ", pubArea)
-	fmt.Println("vaibhav 2 NewKey err: ", err)
 	if err != nil {
 		return nil, err
 	}
@@ -216,10 +207,8 @@ func NewKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public) (k *K
 
 	k = &Key{rw: rw, handle: handle}
 	if k.pubArea, err = tpm2.DecodePublic(pubArea); err != nil {
-		fmt.Println("vaibhav 3 NewKey err: ", err)
 		return
 	}
-	fmt.Println("vaibhav 3 NewKey k.pubArea: ", k.pubArea)
 	return k, k.finish()
 }
 
@@ -521,15 +510,11 @@ func (k *Key) SetCert(cert *x509.Certificate) error {
 // return an error.
 func (k *Key) trySetCertificateFromNvram(index uint32) error {
 	certASN1, err := tpm2.NVReadEx(k.rw, tpmutil.Handle(index), tpm2.HandleOwner, "", 0)
-	fmt.Println("vaibhav 1 trySetCertificateFromNvram certASN1: ", certASN1)
-	fmt.Println("vaibhav 1 trySetCertificateFromNvram err: ", err)
 	if err != nil {
 		// Either the cert data is missing, or we are not allowed to read it
 		return nil
 	}
 	x509Cert, err := x509.ParseCertificate(certASN1)
-	fmt.Println("vaibhav 2 trySetCertificateFromNvram x509Cert: ", x509Cert)
-	fmt.Println("vaibhav 2 trySetCertificateFromNvram err: ", err)
 	if err != nil {
 		return fmt.Errorf("failed to parse certificate from NV memory: %w", err)
 	}
