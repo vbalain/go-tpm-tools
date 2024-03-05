@@ -22,7 +22,7 @@ var (
 func main() {
 	flag.Parse()
 	fmt.Println("flags: public key, ip, port, allowed ip: ", *peer_public_key, *peer_ip, *peer_port, *peer_allowed_ip)
-	dur := 10 * time.Second
+	dur := 25 * time.Second
 	var peerConfigs []wgtypes.PeerConfig
 	var peerAllowedIPs []net.IPNet
 	var peerPublicKey wgtypes.Key
