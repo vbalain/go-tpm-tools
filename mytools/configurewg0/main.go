@@ -14,7 +14,7 @@ import (
 
 var (
 	peer_public_key = flag.String("public_key", "1asi7uykjhasAkuh1asi7uykjhasAkuh", "peer public key")
-	peer_ip         = flag.String("ip", "34.171.172.249", "svm-instance-1") // 10.128.0.8/32
+	peer_ip         = flag.String("ip", "10.128.0.8", "instance-svm-1")  // instance-svm-2 10.128.0.7
 	peer_port       = flag.Int("port", 51820, "port no.")
 	peer_allowed_ip = flag.String("allowed_ip", "10.99.0.0/32", "subnet")
 )
@@ -32,7 +32,6 @@ func main() {
 		return
 	}
 	peerIP := net.ParseIP(*peer_ip)
-	// peerIP := net.ParseIP("34.70.64.176")  // svm-instance-2: 10.128.0.7/32
 	peerPort := *peer_port
 	ip, ipnet, err := net.ParseCIDR(*peer_allowed_ip)
 	if err != nil {
