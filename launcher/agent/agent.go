@@ -88,16 +88,19 @@ func (a *agent) MeasureEvent(event cel.Content) error {
 // creates an attestation message, and returns the resultant
 // principalIDTokens and Metadata Server-generated ID tokens for the instance.
 func (a *agent) Attest(ctx context.Context, opts AttestAgentOpts) ([]byte, error) {
+	fmt.Println("vaibhav agent Attest 1")
 	challenge, err := a.client.CreateChallenge(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Println("vaibhav agent Attest 2")
 	principalTokens, err := a.principalFetcher(challenge.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get principal tokens: %w", err)
 	}
 
+	fmt.Println("vaibhav agent Attest 3")
 	attestation, err := a.getAttestation(challenge.Nonce)
 	if err != nil {
 		return nil, err
@@ -125,13 +128,16 @@ func (a *agent) Attest(ctx context.Context, opts AttestAgentOpts) ([]byte, error
 		a.logger.Printf("Found container image signatures: %v\n", signatures)
 	}
 
+	fmt.Println("vaibhav agent Attest 4")
 	resp, err := a.client.VerifyAttestation(ctx, req)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("vaibhav agent Attest 5")
 	if len(resp.PartialErrs) > 0 {
 		a.logger.Printf("Partial errors from VerifyAttestation: %v", resp.PartialErrs)
 	}
+	fmt.Println("vaibhav agent Attest 6")
 	return resp.ClaimsToken, nil
 }
 

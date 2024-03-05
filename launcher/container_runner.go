@@ -282,9 +282,9 @@ func appendTokenMounts(mounts []specs.Mount) []specs.Mount {
 }
 
 func (r *ContainerRunner) measureCELEvents(ctx context.Context) error {
-	if err := r.measureContainerClaims(ctx); err != nil {
-		return fmt.Errorf("failed to measure container claims: %v", err)
-	}
+	// if err := r.measureContainerClaims(ctx); err != nil {
+	// 	return fmt.Errorf("failed to measure container claims: %v", err)
+	// }
 	if r.launchSpec.Experiments.EnableMeasureMemoryMonitor {
 		if err := r.measureMemoryMonitor(); err != nil {
 			return fmt.Errorf("failed to measure memory monitoring state: %v", err)
@@ -525,9 +525,9 @@ func (r *ContainerRunner) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to measure CEL events: %v", err)
 	}
 
-	if err := r.fetchAndWriteToken(ctx); err != nil {
-		return fmt.Errorf("failed to fetch and write OIDC token: %v", err)
-	}
+	// if err := r.fetchAndWriteToken(ctx); err != nil {
+	// 	return fmt.Errorf("failed to fetch and write OIDC token: %v", err)
+	// }
 
 	r.logger.Printf("EnableTestFeatureForImage is set to %v\n", r.launchSpec.Experiments.EnableTestFeatureForImage)
 	// create and start the TEE server behind the experiment
