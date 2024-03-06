@@ -41,6 +41,7 @@ func main() {
 
 func ping(ip string) {
 	out, _ := exec.Command("ping", ip, "-c 5", "-i 3", "-w 10").Output()
+	fmt.Println("ping output: ", out)
 	if strings.Contains(string(out), "Destination Host Unreachable") {
 		fmt.Println("TANGO DOWN")
 	} else {
