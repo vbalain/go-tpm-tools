@@ -14,9 +14,10 @@ import (
 
 var (
 	peer_public_key = flag.String("public_key", "1asi7uykjhasAkuh1asi7uykjhasAkuh", "peer public key")
-	peer_ip         = flag.String("ip", "10.128.0.8", "instance-svm-1")  // instance-svm-2 10.128.0.7
+	peer_ip         = flag.String("ip", "10.128.0.8", "instance-svm-1") // instance-svm-2 10.128.0.7
 	peer_port       = flag.Int("port", 51820, "port no.")
 	peer_allowed_ip = flag.String("allowed_ip", "10.99.0.0/32", "subnet")
+	replace_peers   = flag.Bool("replace_peers", true, "replace peers in wg0 config")
 )
 
 func main() {
@@ -53,7 +54,7 @@ func main() {
 	peerConfigs = append(peerConfigs, peerConfig)
 
 	newCfg := wgtypes.Config{
-		ReplacePeers: true,
+		ReplacePeers: *replace_peers,
 		Peers:        peerConfigs,
 	}
 
