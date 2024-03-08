@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package connect;
+
+option go_package = "github.com/google/go-tpm-tools/mytools/service/proto/connect";
+
+// Interface exported by the server.
+service Connect {
+  rpc GetPSK(PskRequest) returns (PskResponse) {}
+}
+
+message PskRequest {
+  optional string key = 1;
+}
+
+message PskResponse {
+  optional bool success = 1;
+}
