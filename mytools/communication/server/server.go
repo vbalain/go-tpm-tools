@@ -26,7 +26,7 @@ type ConnectServer struct {
 func (s *ConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*pb.PskResponse, error) {
 	result := true
 	key := "xwHuPhl5gw5rUhOToxCB2UEuI3JhQWOi8kVuxcI4inY=" // dummy key string for now
-	fmt.Println("GetPSK: key: ", key)
+	fmt.Println("server: sending PSK key: ", key)
 	return &pb.PskResponse{Success: &result, Key: &key}, nil
 }
 
