@@ -26,6 +26,7 @@ type ConnectServer struct {
 func (s *ConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*pb.PskResponse, error) {
 	result := true
 	key := "xwHuPhl5gw5rUhOToxCB2UEuI3JhQWOi8kVuxcI4inY=" // dummy key string for now
+	fmt.Println("GetPSK: key: ", key)
 	return &pb.PskResponse{Success: &result, Key: &key}, nil
 }
 
@@ -40,6 +41,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	fmt.Println("server is listening to port: ", *port)
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterConnectServer(grpcServer, newServer())
