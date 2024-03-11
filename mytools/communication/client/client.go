@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	pb "github.com/google/go-tpm-tools/mytools/communication/proto/connect"
+	"github.com/google/go-tpm-tools/mytools/showwg0"
 )
 
 var (
@@ -35,6 +36,7 @@ func RequestPSK(serverAddr string) {
 		fmt.Printf("failed to receive response from server: %v", err)
 	}
 	fmt.Println("client: received PSK key: ", *(res.Key))
+	showwg0.ShowConfig()
 }
 
 func main() {
