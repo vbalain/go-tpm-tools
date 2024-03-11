@@ -2,24 +2,21 @@ package main
 
 import (
 	"fmt"
-	"net"
-	"strings"
 
+	"github.com/google/go-tpm-tools/mytools/showwg0"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func main() {
+func SetupWgInterface() (string, error) {
 	privateKey, err := wgtypes.GeneratePrivateKey()
 	if err != nil {
-		fmt.Printf("wgtypes: failed to generate private key: %v", err)
-		return
+		return "", fmt.Errorf("wgtypes: failed to generate private key: %v", err)
 	}
 	publicKey := privateKey.PublicKey()
 	pskKey, err := wgtypes.GenerateKey()
 	if err != nil {
-		fmt.Printf("wgtypes: failed to generate psk key: %v", err)
-		return
+		return "", fmt.Errorf("wgtypes: failed to generate psk key: %v", err)
 	}
 	fmt.Println("(1) publicKey, privateKey, pskKey: ", publicKey, privateKey, pskKey)
 	fmt.Println("(1s) publicKey: ", publicKey.String())
@@ -35,77 +32,26 @@ func main() {
 
 	wgctrlClient, err := wgctrl.New()
 	if err != nil {
-		fmt.Printf("wgctrl: failed to create New wgctrl: %v", err)
-		return
+		return "", fmt.Errorf("wgctrl: failed to create New wgctrl: %v", err)
 	}
 
 	device, err := wgctrlClient.Device("wg0")
 	if err != nil {
-		fmt.Printf("wgctrlClient: failed to get wg0 device: %v", err)
-		return
+		return "", fmt.Errorf("wgctrlClient: failed to get wg0 device: %v", err)
 	}
 
 	if err := wgctrlClient.ConfigureDevice(device.Name, cfg); err != nil {
-		fmt.Printf("wgctrlClient: failed to configure on %q: %v", device.Name, err)
-		return
+		return "", fmt.Errorf("wgctrlClient: failed to configure on %q: %v", device.Name, err)
 	}
 
-	newDevice, err := wgctrlClient.Device(device.Name)
+	showwg0.ShowConfig()
+
+	return publicKey.String(), nil
+}
+
+func main() {
+	_, err := SetupWgInterface()
 	if err != nil {
-		fmt.Printf("wgctrlClient: failed to get updated device: %v", err)
-		return
+		fmt.Printf("setupwg0: failure: %v", err)
 	}
-
-	printDevice(newDevice)
-
-	for _, p := range newDevice.Peers {
-		printPeer(p)
-	}
-}
-
-func printDevice(d *wgtypes.Device) {
-	const f = `interface: %s (%s)
-  public key: %s
-  private key: %s
-  listening port: %d
-  peers count: %d`
-
-	fmt.Printf(
-		f,
-		d.Name,
-		d.Type.String(),
-		d.PublicKey,
-		d.PrivateKey,
-		d.ListenPort,
-		len(d.Peers))
-	fmt.Println("**********")
-}
-
-func printPeer(p wgtypes.Peer) {
-	const f = `peer: %s
-  endpoint: %s
-  allowed ips: %s
-  latest handshake: %s
-  transfer: %d B received, %d B sent`
-
-	fmt.Printf(
-		f,
-		p.PublicKey,
-		// TODO(mdlayher): get right endpoint with getnameinfo.
-		p.Endpoint.String(),
-		ipsString(p.AllowedIPs),
-		p.LastHandshakeTime.String(),
-		p.ReceiveBytes,
-		p.TransmitBytes,
-	)
-	fmt.Println("**********")
-}
-
-func ipsString(ipns []net.IPNet) string {
-	ss := make([]string, 0, len(ipns))
-	for _, ipn := range ipns {
-		ss = append(ss, ipn.String())
-	}
-
-	return strings.Join(ss, ", ")
 }

@@ -17,12 +17,11 @@ var (
 	serverAddr = flag.String("addr", "192.168.0.1:51820", "The server address in the format of host:port")
 )
 
-func main() {
-	flag.Parse()
+func RequestPSK(serverAddr string) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	conn, err := grpc.Dial(*serverAddr, opts...)
+	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
@@ -38,4 +37,9 @@ func main() {
 	fmt.Println("received PSK res.key: ", res.Key)
 	key := *(res.Key)
 	fmt.Println("received PSK key: ", key)
+}
+
+func main() {
+	flag.Parse()
+	RequestPSK(*serverAddr)
 }

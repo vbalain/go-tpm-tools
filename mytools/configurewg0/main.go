@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	// "github.com/google/go-sev-guest/tools/lib/cmdline"
+	"github.com/google/go-tpm-tools/mytools/showwg0"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -22,20 +22,24 @@ var (
 
 func main() {
 	flag.Parse()
-	fmt.Println("flags: public key, ip, port, allowed ips: ", *peer_public_key, *peer_ip, *peer_port, *peer_allowed_ips)
+	fmt.Println("flags: public key, ip, port, allowed ips: ")
+	ConfigurePeer(*peer_public_key, *peer_ip, *peer_port, *peer_allowed_ips, *replace_peers)
+}
+
+func ConfigurePeer(publicKey string, ip string, port int, allowedIps string, refreshPeers bool) {
 	var peerConfigs []wgtypes.PeerConfig
 	var peerAllowedIPs []net.IPNet
 	var peerPublicKey wgtypes.Key
 	dur := 25 * time.Second
-	peerPublicKey, err := wgtypes.ParseKey(*peer_public_key)
+	peerPublicKey, err := wgtypes.ParseKey(publicKey)
 	if err != nil {
 		fmt.Printf("wgtypes: Unable to parse key: %v", err)
 		return
 	}
-	peerIP := net.ParseIP(*peer_ip)
-	peerPort := *peer_port
+	peerIP := net.ParseIP(ip)
+	peerPort := port
 
-	ips := *peer_allowed_ips
+	ips := allowedIps
 	ipList := strings.Split(ips, ",")
 	for _, element := range ipList {
 		if element == "" {
@@ -62,7 +66,7 @@ func main() {
 	peerConfigs = append(peerConfigs, peerConfig)
 
 	newCfg := wgtypes.Config{
-		ReplacePeers: *replace_peers,
+		ReplacePeers: refreshPeers,
 		Peers:        peerConfigs,
 	}
 
@@ -83,62 +87,5 @@ func main() {
 		return
 	}
 
-	newDevice, err := wgctrlClient.Device(device.Name)
-	if err != nil {
-		fmt.Printf("wgctrlClient: failed to get updated device: %v", err)
-		return
-	}
-
-	printDevice(newDevice)
-
-	for _, p := range newDevice.Peers {
-		printPeer(p)
-	}
-}
-
-func printDevice(d *wgtypes.Device) {
-	const f = `interface: %s (%s)
-  public key: %s
-  private key: %s
-  listening port: %d
-  peers count: %d`
-
-	fmt.Printf(
-		f,
-		d.Name,
-		d.Type.String(),
-		d.PublicKey,
-		d.PrivateKey,
-		d.ListenPort,
-		len(d.Peers))
-	fmt.Println("**********")
-}
-
-func printPeer(p wgtypes.Peer) {
-	const f = `peer: %s
-  endpoint: %s
-  allowed ips: %s
-  latest handshake: %s
-  transfer: %d B received, %d B sent`
-
-	fmt.Printf(
-		f,
-		p.PublicKey,
-		// TODO(mdlayher): get right endpoint with getnameinfo.
-		p.Endpoint.String(),
-		ipsString(p.AllowedIPs),
-		p.LastHandshakeTime.String(),
-		p.ReceiveBytes,
-		p.TransmitBytes,
-	)
-	fmt.Println("**********")
-}
-
-func ipsString(ipns []net.IPNet) string {
-	ss := make([]string, 0, len(ipns))
-	for _, ipn := range ipns {
-		ss = append(ss, ipn.String())
-	}
-
-	return strings.Join(ss, ", ")
+	showwg0.ShowConfig()
 }

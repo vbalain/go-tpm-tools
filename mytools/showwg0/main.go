@@ -1,4 +1,4 @@
-package main
+package showwg0
 
 import (
 	"fmt"
@@ -9,17 +9,15 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func main() {
+func ShowConfig() error {
 	wgctrlClient, err := wgctrl.New()
 	if err != nil {
-		fmt.Printf("wgctrl: failed to create New wgctrl: %v", err)
-		return
+		return fmt.Errorf("wgctrl: failed to create New wgctrl: %v", err)
 	}
 
 	device, err := wgctrlClient.Device("wg0")
 	if err != nil {
-		fmt.Printf("wgctrlClient: failed to get wg0 device: %v", err)
-		return
+		return fmt.Errorf("wgctrlClient: failed to get wg0 device: %v", err)
 	}
 
 	printDevice(device)
@@ -27,6 +25,8 @@ func main() {
 	for _, p := range device.Peers {
 		printPeer(p)
 	}
+
+	return nil
 }
 
 func printDevice(d *wgtypes.Device) {
