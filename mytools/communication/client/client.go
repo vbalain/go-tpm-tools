@@ -36,6 +36,6 @@ func main() {
 		fmt.Printf("failed to receive response from server: %v", err)
 	}
 	fmt.Println("received PSK res.key: ", res.Key)
-	key := &(res.Key)
+	key := *(res.Key)
 	fmt.Println("received PSK key: ", key)
 }
