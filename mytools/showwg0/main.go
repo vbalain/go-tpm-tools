@@ -26,6 +26,9 @@ func ShowConfig() error {
 		printPeer(p)
 	}
 
+	fmt.Println("...")
+	fmt.Println("...")
+
 	return nil
 }
 
@@ -44,7 +47,7 @@ func printDevice(d *wgtypes.Device) {
 		d.PrivateKey,
 		d.ListenPort,
 		len(d.Peers))
-	fmt.Println("**********")
+	fmt.Println("...")
 }
 
 func printPeer(p wgtypes.Peer) {
@@ -64,7 +67,7 @@ func printPeer(p wgtypes.Peer) {
 		p.ReceiveBytes,
 		p.TransmitBytes,
 	)
-	fmt.Println("**********")
+	fmt.Println("...")
 }
 
 func ipsString(ipns []net.IPNet) string {

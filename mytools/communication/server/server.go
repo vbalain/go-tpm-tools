@@ -43,6 +43,8 @@ func StartServer(port int) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	fmt.Println("server is listening to port: ", port)
+	fmt.Println("...")
+	fmt.Println("...")
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterConnectServer(grpcServer, newServer())
