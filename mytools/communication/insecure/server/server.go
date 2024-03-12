@@ -38,12 +38,24 @@ func newServer() *ConnectServer {
 	return s
 }
 
+func GetOutboundIP() string {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP.String()
+}
+
 func StartServer(port int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	fmt.Println("server is listening to port: ", port)
+	fmt.Println("server is listening to: ", GetOutboundIP(), port)
 	fmt.Println("...")
 	fmt.Println("...")
 	var opts []grpc.ServerOption

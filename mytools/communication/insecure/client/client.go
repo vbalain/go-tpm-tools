@@ -35,6 +35,9 @@ func RequestPublicKeyFromPrimary(serverAddr string) {
 	myPublicKey := "aqMpWik5gw5rUhOToxCB2UEuI3JhQWOi8kVuxcO8u9R="
 	myInstanceId := "companion123"
 	myIp := GetOutboundIP()
+	fmt.Println("client: request: public key: ", myPublicKey)
+	fmt.Println("client: request: instance id: ", myInstanceId)
+	fmt.Println("client: request: ip: ", myIp)
 	fmt.Println("vaibhav 4")
 	req := pb.ExchangeRequest{Key: &myPublicKey, InstanceId: &myInstanceId, Ip: &myIp}
 	defer cancel()
