@@ -16,7 +16,7 @@ var (
 	// tls      = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	// certFile = flag.String("cert_file", "", "The TLS cert file")
 	// keyFile  = flag.String("key_file", "", "The TLS key file")
-	port = flag.Int("port", 51821, "The server port")
+	port = flag.Int("port", 443, "The server port")
 )
 
 type ConnectServer struct {
