@@ -39,7 +39,7 @@ func newServer() *ConnectServer {
 }
 
 func StartServer(port int) {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("10.128.0.14:%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
