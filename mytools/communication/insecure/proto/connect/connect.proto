@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package connect;
+
+option go_package = "github.com/vbalain/go-tpm-tools/mytools/communication/insecure/proto/connect";
+
+// Interface exported by the server.
+service Connect {
+  rpc ExchangePublicKeys(ExchangeRequest) returns (ExchangeResponse) {}
+}
+
+message ExchangeRequest {
+  optional string key = 1;
+  optional string instance_id = 2;
+  optional string ip = 3;
+}
+
+message ExchangeResponse {
+  optional string key = 1;
+  optional bool success = 2;
+}
