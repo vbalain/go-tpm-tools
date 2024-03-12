@@ -16,7 +16,7 @@ var (
 	// tls      = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	// certFile = flag.String("cert_file", "", "The TLS cert file")
 	// keyFile  = flag.String("key_file", "", "The TLS key file")
-	port = flag.Int("port", 51820, "The server port")
+	port = flag.Int("port", 51821, "The server port")
 )
 
 type ConnectServer struct {
@@ -39,7 +39,7 @@ func newServer() *ConnectServer {
 }
 
 func StartServer(port int) {
-	lis, err := net.Listen("tcp", fmt.Sprintf("10.128.0.14:%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
