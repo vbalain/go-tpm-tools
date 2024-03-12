@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	serverAddr = flag.String("addr", "10.128.0.14:443", "The server address in the format of host:port")
+	serverAddr = flag.String("addr", "10.128.0.14:22", "The server address in the format of host:port")
 )
 
 func RequestPublicKeyFromPrimary(serverAddr string) {

@@ -16,7 +16,8 @@ var (
 	// tls      = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	// certFile = flag.String("cert_file", "", "The TLS cert file")
 	// keyFile  = flag.String("key_file", "", "The TLS key file")
-	port = flag.Int("port", 443, "The server port")
+	addr = flag.String("addr", ":22", "The server port")
+	port = flag.Int("port", 22, "The server port")
 )
 
 type ConnectServer struct {
@@ -50,8 +51,8 @@ func GetOutboundIP() string {
 	return localAddr.IP.String()
 }
 
-func StartServer(port int) {
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+func StartServer(addr string, port int) {
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -66,5 +67,5 @@ func StartServer(port int) {
 
 func main() {
 	flag.Parse()
-	StartServer(*port)
+	StartServer(*addr, *port)
 }
