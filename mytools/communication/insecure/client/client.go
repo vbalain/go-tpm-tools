@@ -23,22 +23,28 @@ func RequestPublicKeyFromPrimary(serverAddr string) {
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	fmt.Println("client: dialing to: ", serverAddr)
 	conn, err := grpc.Dial(serverAddr, opts...)
+	fmt.Println("vaibhav 1")
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
+	fmt.Println("vaibhav 2")
 	defer conn.Close()
 	client := pb.NewConnectClient(conn)
+	fmt.Println("vaibhav 3")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	myPublicKey := "aqMpWik5gw5rUhOToxCB2UEuI3JhQWOi8kVuxcO8u9R="
 	myInstanceId := "companion123"
 	myIp := GetOutboundIP()
+	fmt.Println("vaibhav 4")
 	req := pb.ExchangeRequest{Key: &myPublicKey, InstanceId: &myInstanceId, Ip: &myIp}
 	defer cancel()
 	res, err := client.ExchangePublicKeys(ctx, &req)
+	fmt.Println("vaibhav 5")
 	if err != nil {
 		fmt.Printf("failed to receive response from server: %v", err)
 	}
 	fmt.Println("client: received public key: ", *(res.Key))
+	fmt.Println("vaibhav 6")
 }
 
 // Get preferred outbound ip of this machine
