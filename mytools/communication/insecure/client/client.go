@@ -43,7 +43,6 @@ func RequestPublicKeyFromPrimary(serverAddr string) {
 		return
 	}
 	fmt.Println("client: received public key: ", *(res.Key))
-	fmt.Println("vaibhav 6")
 }
 
 // Get preferred outbound ip of this machine

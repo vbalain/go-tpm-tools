@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/compute/metadata"
 	"github.com/containerd/containerd"
@@ -22,7 +24,15 @@ import (
 	"github.com/google/go-tpm-tools/launcher/internal/experiments"
 	"github.com/google/go-tpm-tools/launcher/launcherfile"
 	"github.com/google/go-tpm-tools/launcher/spec"
+	comm_client "github.com/google/go-tpm-tools/mytools/communication/common/client"
+	comm_server "github.com/google/go-tpm-tools/mytools/communication/common/server"
+	"github.com/google/go-tpm-tools/mytools/configurewg0"
+	"github.com/google/go-tpm-tools/mytools/setupwg0"
 	"github.com/google/go-tpm/legacy/tpm2"
+)
+
+var (
+	instance_type = flag.String("instance_type", "server", "Instance types: server(primary) or client(companion)")
 )
 
 const (
@@ -88,7 +98,7 @@ func main() {
 		// if cannot get launchSpec, exit directly
 		exitCode = failRC
 		logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, rcMessage[exitCode])
-		return
+		// return
 	}
 
 	if err := os.MkdirAll(launcherfile.HostTmpPath, 0744); err != nil {
@@ -127,6 +137,70 @@ func main() {
 	}
 
 	exitCode = getExitCode(launchSpec.Hardened, launchSpec.RestartPolicy, err)
+
+	if *instance_type == "server" {
+		// Step 1: setup VPN wireguard interface so the public key is readily available.
+		primary_wg_port := 51820
+		primary_public_key, err := setupwg0.SetupWgInterface("192.168.0.1/24", primary_wg_port)
+		primary_ip := "10.128.0.14"
+		if err != nil {
+			fmt.Printf("%v", err)
+			return
+		}
+
+		// Step 2: Use gcloud-sdk to create instance with metadata that includes primary public key and IP.
+		// In response get companion's instance ID, IP, wg subnet, wg port etc.
+		fmt.Println("use gcloud-sdk to create instance and add to metadata primary public key and its IP", primary_public_key, primary_ip)
+		companion_instance_id := "companion1"
+		companion_ip := "10.128.0.8"
+		companion_wg_subnet := "192.168.0.2"
+		companion_wg_port := 51820
+		fmt.Println("gcloud-sdk API returns companion instance ID and its IP ...", companion_instance_id, companion_ip, companion_wg_subnet, companion_wg_port)
+
+		// Step 3: Start gRPC server(insecure) to exchange public keys.
+		comm_server.AddCompanion(companion_instance_id, companion_ip)
+		comm_server.StartInsecureConnectServer(":80")
+		// gRPC server(insecure) is closed after an exchange between primary and companion.
+
+		// Step 4: Configure VPN wireguard by adding peer/companion.
+		companion_public_key, err := comm_server.GetCompanionPK(companion_instance_id)
+		if err != nil {
+			fmt.Printf("%v", err)
+			return
+		}
+		configurewg0.ConfigurePeer(*companion_public_key, companion_ip, companion_wg_port, "192.168.0.2/32", true)
+
+		// sStep 5: Start gRPC server to exchange PSK and Certificates etc.
+		comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", primary_wg_port))
+	} else if *instance_type == "client" {
+		// setup VPN wireguard interface
+		companion_public_key, err := setupwg0.SetupWgInterface("192.168.0.2/24", 51820)
+		companion_ip := "10.128.0.8"
+		if err != nil {
+			fmt.Printf("%v", err)
+			return
+		}
+		fmt.Println("companion public key and its IP", companion_public_key, companion_ip)
+
+		insecure_server_addr := "10.128.0.14:80" // fetched from metadata
+		_, _ = comm_client.SharePublicKeyWithPrimary(insecure_server_addr)
+
+		// Primary instance public key, IP etc. should be available from metadata when launching companion instances.
+		primary_public_key := "primary_public_key"
+		primary_ip := "10.128.0.14"
+		primary_allowed_ips := "192.168.0.1/32"
+		primary_wg_port := 51820
+		fmt.Println("fetch from metadata - primary public key and its IP...", primary_public_key, primary_ip, primary_wg_port)
+
+		// configure VPN wireguard by adding peer
+		configurewg0.ConfigurePeer(primary_public_key, primary_ip, primary_wg_port, primary_allowed_ips, true)
+
+		time.Sleep(time.Duration(20) * time.Second)
+
+		// VPM wireguard subnet decided by us. x.x.x.1 for primary instance and subsequent for companion instances.
+		secure_server_addr := "192.168.0.1:51820"
+		comm_client.RequestPSK(secure_server_addr)
+	}
 }
 
 func getExitCode(isHardened bool, restartPolicy spec.RestartPolicy, err error) int {
