@@ -138,6 +138,7 @@ func main() {
 
 	exitCode = getExitCode(launchSpec.Hardened, launchSpec.RestartPolicy, err)
 
+	flag.Parse()
 	fmt.Println("Instance type:", *instance_type)
 
 	if *instance_type == "server" {
