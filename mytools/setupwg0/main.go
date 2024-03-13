@@ -13,14 +13,34 @@ func SetupWgInterface(wgSubnet string, wgPort int) (*string, error) {
 	fmt.Println("SetupWgInterface")
 	cmd := exec.Command("/bin/sh", "-c", "sudo ip link add dev wg0 type wireguard")
 	fmt.Println("running cmd:", cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(out, err)
+	}
 	cmd = exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo ip address add dev wg0 %s", wgSubnet))
 	fmt.Println("running cmd:", cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(out, err)
+	}
 	cmd = exec.Command("/bin/sh", "-c", "sudo iptables -I INPUT 1 -i wg0 -j ACCEPT")
 	fmt.Println("running cmd:", cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(out, err)
+	}
 	cmd = exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo /sbin/iptables -A INPUT -p udp --dport %d -j ACCEPT", wgPort))
 	fmt.Println("running cmd:", cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(out, err)
+	}
 	cmd = exec.Command("/bin/sh", "-c", "sudo ip link set up dev wg0")
 	fmt.Println("running cmd:", cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(out, err)
+	}
 
 	privateKey, err := wgtypes.GeneratePrivateKey()
 	if err != nil {
