@@ -142,7 +142,18 @@ func main() {
 	fmt.Println("Instance type:", *instance_type)
 
 	if *instance_type == "server" {
-		// Step 1: setup VPN wireguard interface so the public key is readily available.
+		// Step 0: Open TCP port 80
+		fmt.Println("Step 0: Open TCP port 80")
+		exposePort := 80
+		cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo iptables -A INPUT -p tcp --dport %d -j ACCEPT", exposePort))
+		fmt.Println("running cmd:", cmd)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Println(out, err)
+		}
+
+		// Step 1: Setup VPN wireguard interface so the public key is readily available.
+		fmt.Println("Step 1: Setup VPN wireguard interface so the public key is readily available.")
 		primary_wg_port := 51820
 		primary_public_key, err := setupwg0.SetupWgInterface("192.168.0.1/24", primary_wg_port)
 		primary_ip := "10.128.0.14"
@@ -153,6 +164,8 @@ func main() {
 
 		// Step 2: Use gcloud-sdk to create instance with metadata that includes primary public key and IP.
 		// In response get companion's instance ID, IP, wg subnet, wg port etc.
+		fmt.Println("Step 2: Use gcloud-sdk to create instance with metadata that includes primary public key and IP."
+		            "In response get companion's instance ID, IP, wg subnet, wg port")
 		fmt.Println("use gcloud-sdk to create instance and add to metadata primary public key and its IP", primary_public_key, primary_ip)
 		companion_instance_id := "companion1"
 		companion_ip := "10.128.0.8"
@@ -161,11 +174,13 @@ func main() {
 		fmt.Println("gcloud-sdk API returns companion instance ID and its IP ...", companion_instance_id, companion_ip, companion_wg_subnet, companion_wg_port)
 
 		// Step 3: Start gRPC server(insecure) to exchange public keys.
+		fmt.Println("Step 3: Start gRPC server(insecure) to exchange public keys.")
 		comm_server.AddCompanion(companion_instance_id, companion_ip)
-		comm_server.StartInsecureConnectServer(":80")
+		comm_server.StartInsecureConnectServer(fmt.Sprintf(":%d", exposePort))
 		// gRPC server(insecure) is closed after an exchange between primary and companion.
 
 		// Step 4: Configure VPN wireguard by adding peer/companion.
+		fmt.Println("Step 4: Configure VPN wireguard by adding peer/companion.")
 		companion_public_key, err := comm_server.GetCompanionPK(companion_instance_id)
 		if err != nil {
 			fmt.Printf("%v", err)
@@ -173,7 +188,8 @@ func main() {
 		}
 		configurewg0.ConfigurePeer(*companion_public_key, companion_ip, companion_wg_port, "192.168.0.2/32", true)
 
-		// sStep 5: Start gRPC server to exchange PSK and Certificates etc.
+		// Step 5: Start gRPC server to exchange PSK and Certificates etc.
+		fmt.Println("Step 5: Start gRPC server to exchange PSK and Certificates etc.")
 		comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", primary_wg_port))
 	}
 
@@ -185,10 +201,14 @@ func main() {
 			fmt.Printf("%v", err)
 			return
 		}
-		fmt.Println("companion public key and its IP", companion_public_key, companion_ip)
+		fmt.Println("companion public key and its IP", *companion_public_key, companion_ip)
 
 		insecure_server_addr := "10.128.0.14:80" // fetched from metadata
-		_, _ = comm_client.SharePublicKeyWithPrimary(insecure_server_addr)
+		_, err = comm_client.SharePublicKeyWithPrimary(insecure_server_addr)
+		if err != nil {
+			fmt.Printf("%v", err)
+			return
+		}
 
 		// Primary instance public key, IP etc. should be available from metadata when launching companion instances.
 		primary_public_key := "primary_public_key"

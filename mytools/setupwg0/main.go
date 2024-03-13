@@ -9,8 +9,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func SetupWgInterface(wgSubnet string, wgPort int) (*string, error) {
-	fmt.Println("SetupWgInterface")
+func initCommands(wgSubnet string, wgPort int) {
 	cmd := exec.Command("/bin/sh", "-c", "sudo ip link add dev wg0 type wireguard")
 	fmt.Println("running cmd:", cmd)
 	out, err := cmd.CombinedOutput()
@@ -41,6 +40,12 @@ func SetupWgInterface(wgSubnet string, wgPort int) (*string, error) {
 	if err != nil {
 		fmt.Println(out, err)
 	}
+}
+
+func SetupWgInterface(wgSubnet string, wgPort int) (*string, error) {
+	fmt.Println("SetupWgInterface")
+
+	initCommands(wgSubnet, wgPort)
 
 	privateKey, err := wgtypes.GeneratePrivateKey()
 	if err != nil {
