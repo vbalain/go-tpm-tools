@@ -41,7 +41,7 @@ func RequestPSK(serverAddr string) {
 	showwg0.ShowConfig()
 }
 
-func SharePublicKeyWithPrimary(serverAddr string) (*string, error) {
+func SharePublicKeyWithPrimary(serverAddr string, myPublicKey string) (*string, error) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	fmt.Println("client: dialing to: ", serverAddr)
@@ -51,7 +51,6 @@ func SharePublicKeyWithPrimary(serverAddr string) (*string, error) {
 	}
 	client := pb.NewInsecureConnectClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	myPublicKey := "dummyik5gw5rUhOToxCB2UEuI3JhQWOi8kVuxcO8u9R="
 	myInstanceId := "companion1"
 	myIp := getOutboundIP()
 	fmt.Println("client: request: public key: ", myPublicKey)

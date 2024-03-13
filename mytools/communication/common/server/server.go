@@ -23,6 +23,7 @@ import (
 var companions = make(map[string]string) // key-value pair: instance_id-public key
 var grpcServer *grpc.Server
 var pkExchangeDone bool
+var primaryPublicKey string
 
 func GetCompanionPK(key string) (*string, error) {
 	val, ok := companions[key]
@@ -51,7 +52,7 @@ func (s *InsecureConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.
 		return &pb.ExchangeResponse{Success: &result}, nil
 	}
 	companions[*(req.InstanceId)] = *(req.Key)
-	key := "xwHuPhl5gw5rUhOToxCB2UEuI3JhQWOi8kVuxcI4inY=" // dummy key string for now
+	key := primaryPublicKey
 	fmt.Println("server: response: ending public key: ", key)
 	pkExchangeDone = true
 	go StopSecureServerAfter(10)
@@ -63,7 +64,8 @@ func newInsecureConnectServer() *InsecureConnectServer {
 	return s
 }
 
-func StartInsecureConnectServer(addr string) {
+func StartInsecureConnectServer(addr string, ppk string) {
+	primaryPublicKey = ppk
 	fmt.Println("StartInsecureConnectServer")
 	pkExchangeDone = false
 	lis, err := net.Listen("tcp", addr)
@@ -126,5 +128,4 @@ func StopSecureServerAfter(delay int) {
 
 	grpcServer.GracefulStop()
 	fmt.Println("server: stopped insecure server")
-	// StartSecureConnectServer(":80")
 }

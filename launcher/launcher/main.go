@@ -32,8 +32,8 @@ import (
 )
 
 var (
-	instance_type      = flag.String("instance_type", "server", "Instance types: server(primary) or client(companion)")
-	primary_public_key = flag.String("ppk", "", "primary public key")
+	peer_public_key = flag.String("ppk", "", "peer public key")
+	stage           = flag.String("stage", "l1", "l1: launcher stage 1: p1,p2: primary instance stage 1; c1,c2: companion instance stage 1/2")
 )
 
 const (
@@ -62,87 +62,87 @@ var welcomeMessage = "TEE container launcher initiating"
 var exitMessage = "TEE container launcher exiting"
 
 func main() {
-	var exitCode int // by default exit code is 0
-	var err error
-
-	logger = log.Default()
-	// log.Default() outputs to stderr; change to stdout.
-	log.SetOutput(os.Stdout)
-	defer func() {
-		os.Exit(exitCode)
-	}()
-
-	serialConsole, err := os.OpenFile("/dev/console", os.O_WRONLY, 0)
-	if err != nil {
-		logger.Printf("failed to open serial console for writing: %v\n", err)
-		exitCode = failRC
-		logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, rcMessage[exitCode])
-		return
-	}
-	defer serialConsole.Close()
-	logger.SetOutput(io.MultiWriter(os.Stdout, serialConsole))
-
-	logger.Println(welcomeMessage)
-
-	// if err := verifyFsAndMount(); err != nil {
-	// 	logger.Printf("failed to verify filesystem and mounts: %v\n", err)
-	// 	exitCode = rebootRC
-	// 	logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, rcMessage[exitCode])
-	// 	return
-	// }
-
-	// Get RestartPolicy and IsHardened from spec
-	mdsClient = metadata.NewClient(nil)
-	launchSpec, err := spec.GetLaunchSpec(mdsClient)
-	if err != nil {
-		logger.Printf("failed to get launchspec, make sure you're running inside a GCE VM: %v\n", err)
-		// if cannot get launchSpec, exit directly
-		exitCode = failRC
-		logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, rcMessage[exitCode])
-		// return
-	}
-
-	if err := os.MkdirAll(launcherfile.HostTmpPath, 0744); err != nil {
-		logger.Printf("failed to create %s: %v", launcherfile.HostTmpPath, err)
-	}
-	experimentsFile := path.Join(launcherfile.HostTmpPath, experimentDataFile)
-
-	args := fmt.Sprintf("-output=%s", experimentsFile)
-	err = exec.Command(binaryPath, args).Run()
-	if err != nil {
-		logger.Printf("failure during experiment sync: %v\n", err)
-	}
-
-	e, err := experiments.New(experimentsFile)
-	if err != nil {
-		logger.Printf("failed to read experiment file: %v\n", err)
-		// do not fail if experiment retrieval fails
-	}
-	launchSpec.Experiments = e
-
-	defer func() {
-		// Catch panic to attempt to output to Cloud Logging.
-		if r := recover(); r != nil {
-			logger.Println("Panic:", r)
-			exitCode = 2
-		}
-		msg, ok := rcMessage[exitCode]
-		if ok {
-			logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, msg)
-		} else {
-			logger.Printf("%s, exit code: %d\n", exitMessage, exitCode)
-		}
-	}()
-	if err = startLauncher(launchSpec, serialConsole); err != nil {
-		logger.Println(err)
-	}
-
-	exitCode = getExitCode(launchSpec.Hardened, launchSpec.RestartPolicy, err)
-
 	flag.Parse()
-	fmt.Println("Instance type:", *instance_type)
 
-	if *instance_type == "server" {
+	if *stage == "l1" {
+		var exitCode int // by default exit code is 0
+		var err error
+
+		logger = log.Default()
+		// log.Default() outputs to stderr; change to stdout.
+		log.SetOutput(os.Stdout)
+		defer func() {
+			os.Exit(exitCode)
+		}()
+
+		serialConsole, err := os.OpenFile("/dev/console", os.O_WRONLY, 0)
+		if err != nil {
+			logger.Printf("failed to open serial console for writing: %v\n", err)
+			exitCode = failRC
+			logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, rcMessage[exitCode])
+			return
+		}
+		defer serialConsole.Close()
+		logger.SetOutput(io.MultiWriter(os.Stdout, serialConsole))
+
+		logger.Println(welcomeMessage)
+
+		// if err := verifyFsAndMount(); err != nil {
+		// 	logger.Printf("failed to verify filesystem and mounts: %v\n", err)
+		// 	exitCode = rebootRC
+		// 	logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, rcMessage[exitCode])
+		// 	return
+		// }
+
+		// Get RestartPolicy and IsHardened from spec
+		mdsClient = metadata.NewClient(nil)
+		launchSpec, err := spec.GetLaunchSpec(mdsClient)
+		if err != nil {
+			logger.Printf("failed to get launchspec, make sure you're running inside a GCE VM: %v\n", err)
+			// if cannot get launchSpec, exit directly
+			exitCode = failRC
+			logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, rcMessage[exitCode])
+			// return
+		}
+
+		if err := os.MkdirAll(launcherfile.HostTmpPath, 0744); err != nil {
+			logger.Printf("failed to create %s: %v", launcherfile.HostTmpPath, err)
+		}
+		experimentsFile := path.Join(launcherfile.HostTmpPath, experimentDataFile)
+
+		args := fmt.Sprintf("-output=%s", experimentsFile)
+		err = exec.Command(binaryPath, args).Run()
+		if err != nil {
+			logger.Printf("failure during experiment sync: %v\n", err)
+		}
+
+		e, err := experiments.New(experimentsFile)
+		if err != nil {
+			logger.Printf("failed to read experiment file: %v\n", err)
+			// do not fail if experiment retrieval fails
+		}
+		launchSpec.Experiments = e
+
+		defer func() {
+			// Catch panic to attempt to output to Cloud Logging.
+			if r := recover(); r != nil {
+				logger.Println("Panic:", r)
+				exitCode = 2
+			}
+			msg, ok := rcMessage[exitCode]
+			if ok {
+				logger.Printf("%s, exit code: %d (%s)\n", exitMessage, exitCode, msg)
+			} else {
+				logger.Printf("%s, exit code: %d\n", exitMessage, exitCode)
+			}
+		}()
+		if err = startLauncher(launchSpec, serialConsole); err != nil {
+			logger.Println(err)
+		}
+
+		exitCode = getExitCode(launchSpec.Hardened, launchSpec.RestartPolicy, err)
+	} else if *stage == "p1" {
+		fmt.Println("Instance type: Primary 1")
 		// Step 0: Open TCP port 80
 		fmt.Println("Step 0: Open TCP port 80")
 		exposePort := 80
@@ -156,8 +156,9 @@ func main() {
 		// Step 1: Setup VPN wireguard interface so the public key is readily available.
 		fmt.Println("Step 1: Setup VPN wireguard interface so the public key is readily available.")
 		primary_wg_port := 51820
-		primary_public_key, err := setupwg0.SetupWgInterface("192.168.0.1/24", primary_wg_port)
 		primary_ip := "10.128.0.14"
+		primary_public_key, err := setupwg0.SetupWgInterface("192.168.0.1/24", primary_wg_port)
+		fmt.Println("primary's public key and its IP", *primary_public_key, primary_ip)
 		if err != nil {
 			fmt.Printf("%v", err)
 			return
@@ -175,9 +176,9 @@ func main() {
 		fmt.Println("gcloud-sdk API returns companion instance ID and its IP ...", companion_instance_id, companion_ip, companion_wg_subnet, companion_wg_port)
 
 		// Step 3: Start gRPC server(insecure) to exchange public keys.
+		comm_server.AddCompanion(companion_instance_id, "")
 		fmt.Println("Step 3: Start gRPC server(insecure) to exchange public keys.")
-		comm_server.AddCompanion(companion_instance_id, companion_ip)
-		comm_server.StartInsecureConnectServer(fmt.Sprintf(":%d", exposePort))
+		comm_server.StartInsecureConnectServer(fmt.Sprintf(":%d", exposePort), *primary_public_key)
 		// gRPC server(insecure) is closed after an exchange between primary and companion.
 
 		// Step 4: Configure VPN wireguard by adding peer/companion.
@@ -192,7 +193,8 @@ func main() {
 		// Step 5: Start gRPC server to exchange PSK and Certificates etc.
 		fmt.Println("Step 5: Start gRPC server to exchange PSK and Certificates etc.")
 		comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", primary_wg_port))
-	} else if *instance_type == "client" {
+
+	} else if *stage == "c1" {
 		// setup VPN wireguard interface
 		companion_public_key, err := setupwg0.SetupWgInterface("192.168.0.2/24", 51820)
 		companion_ip := "10.128.0.8"
@@ -200,26 +202,26 @@ func main() {
 			fmt.Printf("%v", err)
 			return
 		}
-		fmt.Println("companion public key and its IP", *companion_public_key, companion_ip)
+		fmt.Println("companion's public key and its IP", *companion_public_key, companion_ip)
 
 		insecure_server_addr := "10.128.0.14:80" // fetched from metadata
-		_, err = comm_client.SharePublicKeyWithPrimary(insecure_server_addr)
+		primary_public_key, err := comm_client.SharePublicKeyWithPrimary(insecure_server_addr, *companion_public_key)
 		if err != nil {
 			fmt.Printf("%v", err)
 			return
 		}
 
 		// Primary instance public key, IP etc. should be available from metadata when launching companion instances.
-		primary_public_key := *primary_public_key // "primary_public_key"
+		// primary_public_key := peer_public_key // "primary_public_key"
 		primary_ip := "10.128.0.14"
 		primary_allowed_ips := "192.168.0.1/32"
 		primary_wg_port := 51820
-		fmt.Println("fetch from metadata - primary public key and its IP...", primary_public_key, primary_ip, primary_wg_port)
+		fmt.Println("fetch from metadata - primary public key and its IP...", *primary_public_key, primary_ip, primary_wg_port)
 
 		// configure VPN wireguard by adding peer
-		configurewg0.ConfigurePeer(primary_public_key, primary_ip, primary_wg_port, primary_allowed_ips, true)
+		configurewg0.ConfigurePeer(*primary_public_key, primary_ip, primary_wg_port, primary_allowed_ips, true)
 
-		time.Sleep(time.Duration(20) * time.Second)
+		time.Sleep(time.Duration(5) * time.Second)
 
 		// VPM wireguard subnet decided by us. x.x.x.1 for primary instance and subsequent for companion instances.
 		secure_server_addr := "192.168.0.1:51820"
