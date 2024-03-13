@@ -20,7 +20,7 @@ import (
 // 	addr = flag.String("addr", ":80", "server address")
 // )
 
-var companions map[string]string // key-value pair: instance_id-public key
+var companions = make(map[string]string) // key-value pair: instance_id-public key
 var grpcServer *grpc.Server
 var pkExchangeDone bool
 

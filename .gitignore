@@ -1,4 +1,3 @@
-launcher/launcher/launcher
 *.test
 *.test.exe
 cmd/gotpm/gotpm
