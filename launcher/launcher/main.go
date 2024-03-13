@@ -32,7 +32,8 @@ import (
 )
 
 var (
-	instance_type = flag.String("instance_type", "server", "Instance types: server(primary) or client(companion)")
+	instance_type      = flag.String("instance_type", "server", "Instance types: server(primary) or client(companion)")
+	primary_public_key = flag.String("ppk", "", "primary public key")
 )
 
 const (
@@ -191,9 +192,7 @@ func main() {
 		// Step 5: Start gRPC server to exchange PSK and Certificates etc.
 		fmt.Println("Step 5: Start gRPC server to exchange PSK and Certificates etc.")
 		comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", primary_wg_port))
-	}
-
-	if *instance_type == "client" {
+	} else if *instance_type == "client" {
 		// setup VPN wireguard interface
 		companion_public_key, err := setupwg0.SetupWgInterface("192.168.0.2/24", 51820)
 		companion_ip := "10.128.0.8"
@@ -211,7 +210,7 @@ func main() {
 		}
 
 		// Primary instance public key, IP etc. should be available from metadata when launching companion instances.
-		primary_public_key := "primary_public_key"
+		primary_public_key := *primary_public_key // "primary_public_key"
 		primary_ip := "10.128.0.14"
 		primary_allowed_ips := "192.168.0.1/32"
 		primary_wg_port := 51820
