@@ -52,7 +52,7 @@ func SharePublicKeyWithPrimary(serverAddr string) (*string, error) {
 	client := pb.NewInsecureConnectClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	myPublicKey := "aqMpWik5gw5rUhOToxCB2UEuI3JhQWOi8kVuxcO8u9R="
-	myInstanceId := "companion123"
+	myInstanceId := "companion1"
 	myIp := getOutboundIP()
 	fmt.Println("client: request: public key: ", myPublicKey)
 	fmt.Println("client: request: instance id: ", myInstanceId)

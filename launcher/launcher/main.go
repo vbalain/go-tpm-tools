@@ -164,8 +164,8 @@ func main() {
 
 		// Step 2: Use gcloud-sdk to create instance with metadata that includes primary public key and IP.
 		// In response get companion's instance ID, IP, wg subnet, wg port etc.
-		fmt.Println("Step 2: Use gcloud-sdk to create instance with metadata that includes primary public key and IP."
-		            "In response get companion's instance ID, IP, wg subnet, wg port")
+		fmt.Println("Step 2: Use gcloud-sdk to create instance with metadata that includes primary public key and IP.",
+			"In response get companion's instance ID, IP, wg subnet, wg port")
 		fmt.Println("use gcloud-sdk to create instance and add to metadata primary public key and its IP", primary_public_key, primary_ip)
 		companion_instance_id := "companion1"
 		companion_ip := "10.128.0.8"
