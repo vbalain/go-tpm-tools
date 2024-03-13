@@ -13,7 +13,6 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"time"
 
 	"cloud.google.com/go/compute/metadata"
 	"github.com/containerd/containerd"
@@ -32,8 +31,7 @@ import (
 )
 
 var (
-	peer_public_key = flag.String("ppk", "", "peer public key")
-	stage           = flag.String("stage", "l1", "l1: launcher stage 1: p1,p2: primary instance stage 1; c1,c2: companion instance stage 1/2")
+	stage = flag.String("stage", "l1", "l1: launcher stage 1: p1: primary instance stage 1; c1: companion instance stage 1/2")
 )
 
 const (
@@ -142,7 +140,7 @@ func main() {
 
 		exitCode = getExitCode(launchSpec.Hardened, launchSpec.RestartPolicy, err)
 	} else if *stage == "p1" {
-		fmt.Println("Instance type: Primary 1")
+		fmt.Println("Instance: Primary")
 		// Step 0: Open TCP port 80
 		fmt.Println("Step 0: Open TCP port 80")
 		exposePort := 80
@@ -195,7 +193,9 @@ func main() {
 		comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", primary_wg_port))
 
 	} else if *stage == "c1" {
-		// setup VPN wireguard interface
+		fmt.Println("Instance: Companion")
+		// Step 1: Setup VPN wireguard interface so the public key is readily available.
+		fmt.Println("Step 1: Setup VPN wireguard interface so the public key is readily available.")
 		companion_public_key, err := setupwg0.SetupWgInterface("192.168.0.2/24", 51820)
 		companion_ip := "10.128.0.8"
 		if err != nil {
@@ -204,27 +204,31 @@ func main() {
 		}
 		fmt.Println("companion's public key and its IP", *companion_public_key, companion_ip)
 
+		// Step 2: Share Companion's public key with the Primary instance.
+		fmt.Println("Step 2: Share Companion's public key with the Primary instance.")
 		insecure_server_addr := "10.128.0.14:80" // fetched from metadata
 		primary_public_key, err := comm_client.SharePublicKeyWithPrimary(insecure_server_addr, *companion_public_key)
 		if err != nil {
 			fmt.Printf("%v", err)
 			return
 		}
-
+		// ideally, the primary instance's primary key should be part of metadata but unless gcloud APIs are not used,
+		// we can do it this way.
 		// Primary instance public key, IP etc. should be available from metadata when launching companion instances.
-		// primary_public_key := peer_public_key // "primary_public_key"
+		fmt.Println("Primary instance public key, IP etc. should be available from metadata when launching companion instances.")
 		primary_ip := "10.128.0.14"
 		primary_allowed_ips := "192.168.0.1/32"
 		primary_wg_port := 51820
 		fmt.Println("fetch from metadata - primary public key and its IP...", *primary_public_key, primary_ip, primary_wg_port)
 
-		// configure VPN wireguard by adding peer
+		// Step 3: Configure VPN wireguard by adding peer.
+		fmt.Println("Step 3: Configure VPN wireguard by adding peer.")
 		configurewg0.ConfigurePeer(*primary_public_key, primary_ip, primary_wg_port, primary_allowed_ips, true)
-
-		time.Sleep(time.Duration(5) * time.Second)
 
 		// VPM wireguard subnet decided by us. x.x.x.1 for primary instance and subsequent for companion instances.
 		secure_server_addr := "192.168.0.1:51820"
+		// Step 4: Request PSK key, certificates etc. from server(primary instance)
+		fmt.Println("Step 4: Request PSK key, certificates etc. from server(primary instance)")
 		comm_client.RequestPSK(secure_server_addr)
 	}
 }
