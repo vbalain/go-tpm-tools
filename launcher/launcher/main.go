@@ -138,6 +138,8 @@ func main() {
 
 	exitCode = getExitCode(launchSpec.Hardened, launchSpec.RestartPolicy, err)
 
+	fmt.Println("Instance type:", *instance_type)
+
 	if *instance_type == "server" {
 		// Step 1: setup VPN wireguard interface so the public key is readily available.
 		primary_wg_port := 51820
@@ -172,7 +174,9 @@ func main() {
 
 		// sStep 5: Start gRPC server to exchange PSK and Certificates etc.
 		comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", primary_wg_port))
-	} else if *instance_type == "client" {
+	}
+
+	if *instance_type == "client" {
 		// setup VPN wireguard interface
 		companion_public_key, err := setupwg0.SetupWgInterface("192.168.0.2/24", 51820)
 		companion_ip := "10.128.0.8"
