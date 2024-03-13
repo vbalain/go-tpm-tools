@@ -13,13 +13,6 @@ import (
 	"github.com/google/go-tpm-tools/mytools/showwg0"
 )
 
-// var (
-// 	// tls      = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-// 	// certFile = flag.String("cert_file", "", "The TLS cert file")
-// 	// keyFile  = flag.String("key_file", "", "The TLS key file")
-// 	addr = flag.String("addr", ":80", "server address")
-// )
-
 var companions = make(map[string]string) // key-value pair: instance_id-public key
 var grpcServer *grpc.Server
 var pkExchangeDone bool

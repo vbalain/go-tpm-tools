@@ -14,11 +14,6 @@ import (
 	"github.com/google/go-tpm-tools/mytools/showwg0"
 )
 
-// var (
-// 	secureAddr   = flag.String("addr", "192.168.0.1:80", "VPN Wireguard subnet/server address in the format of host:port")
-// 	insecureAddr = flag.String("addr2", "10.128.0.14:80", "server address in the format of host:port")
-// )
-
 func RequestPSK(serverAddr string) {
 	fmt.Println("Exchange Pre-shared Keys and Certs")
 	var opts []grpc.DialOption
