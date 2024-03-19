@@ -30,7 +30,6 @@ func newDefaultConnectServer() *DefaultConnectServer {
 
 func (s *DefaultConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.ExchangeRequest) (*pb.ExchangeResponse, error) {
 	result := true
-	fmt.Printf("\n")
 	fmt.Println("default server: request: public key: ", *(req.Key))
 	fmt.Println("default server: request: instance id: ", *(req.InstanceId))
 
@@ -38,17 +37,16 @@ func (s *DefaultConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.E
 	peer_public_key := *(req.Key)
 	peer_ip := "10.128.0.14"
 
-	fmt.Println("Step 5: Configure VPN wireguard by adding peer/companion.")
+	fmt.Printf("\nStep 5: Configure VPN wireguard by adding peer/companion.\n\n")
 	wg_port := 51820
 	configurewg0.ConfigurePeer(peer_public_key, peer_ip, wg_port, "192.168.0.2/32", true)
 
 	key := primaryPublicKey
-	fmt.Println("default server: response: ending public key: ", key)
+	fmt.Println("default server: sending public key: ", key)
 	return &pb.ExchangeResponse{Success: &result, Key: &key}, nil
 }
 
 func StartDefaultConnectServer(addr string, ppk_optional ...string) {
-	fmt.Printf("\n")
 	if len(ppk_optional) > 0 {
 		primaryPublicKey = ppk_optional[0]
 	} else {
@@ -78,7 +76,6 @@ func newWgConnectServer() *WgConnectServer {
 }
 
 func (s *WgConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*pb.PskResponse, error) {
-	fmt.Printf("\n")
 	result := true
 	pskKey, err := wgtypes.GenerateKey()
 	if err != nil {
@@ -91,7 +88,6 @@ func (s *WgConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*
 }
 
 func StartWgConnectServer(addr string) {
-	fmt.Printf("\n")
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -106,7 +102,6 @@ func StartWgConnectServer(addr string) {
 }
 
 func StopDefaultServerAfter(delay int) {
-	fmt.Printf("\n")
 	fmt.Println("default server: stopping server after", delay, "seconds")
 	time.Sleep(time.Duration(delay) * time.Second)
 

@@ -73,10 +73,10 @@ func main() {
 	var wg sync.WaitGroup
 
 	if *stage == "p1" {
-		fmt.Printf("Instance: Primary\n\n")
+		fmt.Println("Instance: Primary")
 
 		// Step 1: Setup VPN wireguard interface so the public key is readily available.
-		fmt.Printf("STEP 1: Setup VPN wireguard interface so the public key is readily available.\n\n")
+		fmt.Printf("\nSTEP 1: Setup VPN wireguard interface so the public key is readily available.\n\n")
 		wg_port = 51820
 		my_ip = getOutboundIP()
 		ppk, err := setupwg0.SetupWgInterface("192.168.0.1/24", wg_port, *debug)
@@ -88,7 +88,7 @@ func main() {
 		fmt.Println("primary's public key and its IP", my_public_key, my_ip)
 
 		// Step 2: Open TCP port 80
-		fmt.Printf("STEP 2: Open TCP port 80\n\n")
+		fmt.Printf("\nSTEP 2: Open TCP port 80\n\n")
 		my_port := 80
 		cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo iptables -A INPUT -p tcp --dport %d -j ACCEPT", my_port))
 		fmt.Println("running cmd:", cmd)
@@ -100,14 +100,14 @@ func main() {
 		// Step 3: Start gRPC server to exchange public keys.
 		// gRPC server will be closed after an exchange between primary and companion.
 		// comm_server.AddCompanion(companion_instance_id, "")
-		fmt.Printf("STEP 3: Start gRPC server to exchange public keys.\n\n")
+		fmt.Printf("\nSTEP 3: Start gRPC server to exchange public keys.\n\n")
 		wg.Add(1)
 		go comm_server.StartDefaultConnectServer(fmt.Sprintf(":%d", my_port), my_public_key)
 	} else if *stage == "c1" {
-		fmt.Printf("Instance: Companion\n\n")
+		fmt.Println("Instance: Companion")
 
 		// Step 1: Setup VPN wireguard interface so the public key is readily available.
-		fmt.Printf("STEP 1: Setup VPN wireguard interface so the public key is readily available.\n\n")
+		fmt.Printf("\nSTEP 1: Setup VPN wireguard interface so the public key is readily available.\n\n")
 		wg_port = 51820
 		ppk, err := setupwg0.SetupWgInterface("192.168.0.2/24", wg_port, *debug)
 		my_public_key = *ppk
@@ -200,15 +200,15 @@ func main() {
 
 	if *stage == "p1" {
 		// Step 4: StartLauncher -> container_runner -> companion_manager server should have written companion instance ID/Name and IPs.
-		fmt.Printf("STEP 4: StartLauncher -> container_runner -> companion_manager server should have written companion instance ID/Name and IPs.\n\n")
+		fmt.Printf("\nSTEP 4: StartLauncher -> container_runner -> companion_manager server should have written companion instance ID/Name and IPs.\n\n")
 
 		// Step 5: Start gRPC server to exchange PSK and Certificates etc.
-		fmt.Printf("STEP 5: Start gRPC server(wg) to exchange PSK and Certificates etc.\n\n")
+		fmt.Printf("\nSTEP 5: Start gRPC server(wg) to exchange PSK and Certificates etc.\n\n")
 		wg.Add(1)
 		go comm_server.StartWgConnectServer(fmt.Sprintf(":%d", wg_port))
 	} else if *stage == "c1" {
 		// Step 2: Share Companion's public key with the Primary instance.
-		fmt.Printf("STEP 2: Share Companion's public key with the Primary instance.\n\n")
+		fmt.Printf("\nSTEP 2: Share Companion's public key with the Primary instance.\n\n")
 		// Primary instance public key, IP etc. should be available from metadata when launching companion instances.
 		fmt.Println("Primary instance public key, IP etc. should be available from metadata when launching companion instances.")
 		primary_allowed_ips := "192.168.0.1/32"
@@ -226,15 +226,15 @@ func main() {
 		fmt.Println("fetch from metadata - primary public key and its IP...", primary_public_key, primary_ip)
 
 		// Step 3: Configure VPN wireguard by adding peer.
-		fmt.Printf("STEP 3: Configure VPN wireguard by adding peer.\n\n")
+		fmt.Printf("\nSTEP 3: Configure VPN wireguard by adding peer.\n\n")
 		configurewg0.ConfigurePeer(primary_public_key, primary_ip, wg_port, primary_allowed_ips, true)
 
 		// VPM wireguard subnet decided by us. x.x.x.1 for primary instance and subsequent for companion instances.
 		secure_server_addr := fmt.Sprintf("192.168.0.1:%d", wg_port)
 		// Step 4: Request PSK key, certificates etc. from server(primary instance)
-		fmt.Println("sleeping for 5 secs before requesting PSK")
+		fmt.Println("let's wait for 5 secs before requesting pre-shared key(PSK)")
 		time.Sleep(time.Duration(5) * time.Second)
-		fmt.Printf("STEP 4: Request PSK key, certificates etc. from server(primary instance)\n\n")
+		fmt.Printf("\nSTEP 4: Request PSK key, certificates etc. from server(primary instance)\n\n")
 		comm_client.RequestPSK(secure_server_addr)
 	}
 
