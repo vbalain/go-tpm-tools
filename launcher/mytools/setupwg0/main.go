@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/google/go-tpm-tools/mytools/showwg0"
+	"github.com/google/go-tpm-tools/launcher/mytools/showwg0"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )

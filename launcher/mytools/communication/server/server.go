@@ -9,22 +9,14 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/google/go-tpm-tools/mytools/communication/common/proto/connect"
-	"github.com/google/go-tpm-tools/mytools/showwg0"
+	pb "github.com/google/go-tpm-tools/launcher/mytools/communication/proto/connect"
+	"github.com/google/go-tpm-tools/launcher/mytools/configurewg0"
+	"github.com/google/go-tpm-tools/launcher/mytools/showwg0"
 )
 
-var companions = make(map[string]string) // key-value pair: instance_id-public key
-var grpcServer *grpc.Server
-var pkExchangeDone bool
+var grpcInsecureServer *grpc.Server
+var grpcSecureServer *grpc.Server
 var primaryPublicKey string
-
-func GetCompanionPK(key string) (*string, error) {
-	val, ok := companions[key]
-	if !ok {
-		return nil, fmt.Errorf("companion key not found")
-	}
-	return &val, nil
-}
 
 type SecureConnectServer struct {
 	pb.UnimplementedSecureConnectServer
@@ -39,16 +31,16 @@ func (s *InsecureConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.
 	fmt.Println("server: request: public key: ", *(req.Key))
 	fmt.Println("server: request: instance id: ", *(req.InstanceId))
 
-	_, ok := companions[*(req.InstanceId)]
-	if !ok {
-		result = false
-		return &pb.ExchangeResponse{Success: &result}, nil
-	}
-	companions[*(req.InstanceId)] = *(req.Key)
+	// Read from file(written by companion_manager server) companion IP via instance ID
+	peer_public_key := *(req.Key)
+	peer_ip := "10.128.0.14"
+
+	fmt.Println("Step 5: Configure VPN wireguard by adding peer/companion.")
+	wg_port := 51820
+	configurewg0.ConfigurePeer(peer_public_key, peer_ip, wg_port, "192.168.0.2/32", true)
+
 	key := primaryPublicKey
 	fmt.Println("server: response: ending public key: ", key)
-	pkExchangeDone = true
-	go StopSecureServerAfter(10)
 	return &pb.ExchangeResponse{Success: &result, Key: &key}, nil
 }
 
@@ -57,10 +49,14 @@ func newInsecureConnectServer() *InsecureConnectServer {
 	return s
 }
 
-func StartInsecureConnectServer(addr string, ppk string) {
-	primaryPublicKey = ppk
+func StartInsecureConnectServer(addr string, ppk_optional ...string) {
+	if len(ppk_optional) > 0 {
+		primaryPublicKey = ppk_optional[0]
+	} else {
+		primaryPublicKey = ""
+	}
+
 	fmt.Println("StartInsecureConnectServer")
-	pkExchangeDone = false
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -69,9 +65,9 @@ func StartInsecureConnectServer(addr string, ppk string) {
 	fmt.Println("...")
 	fmt.Println("...")
 	var opts []grpc.ServerOption
-	grpcServer = grpc.NewServer(opts...)
-	pb.RegisterInsecureConnectServer(grpcServer, newInsecureConnectServer())
-	grpcServer.Serve(lis)
+	grpcInsecureServer = grpc.NewServer(opts...)
+	pb.RegisterInsecureConnectServer(grpcInsecureServer, newInsecureConnectServer())
+	grpcInsecureServer.Serve(lis)
 }
 
 func (s *SecureConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*pb.PskResponse, error) {
@@ -88,37 +84,24 @@ func newSecureConnectServer() *SecureConnectServer {
 }
 
 func StartSecureConnectServer(addr string) {
-	if pkExchangeDone {
-		fmt.Println("StartSecureConnectServer")
-		lis, err := net.Listen("tcp", addr)
-		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
-		}
-		fmt.Println("server is listening to: ", addr)
-		fmt.Println("...")
-		fmt.Println("...")
-		var opts []grpc.ServerOption
-		grpcServer = grpc.NewServer(opts...)
-		pb.RegisterSecureConnectServer(grpcServer, newSecureConnectServer())
-		grpcServer.Serve(lis)
-		return
+	fmt.Println("StartSecureConnectServer")
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
 	}
-
-	fmt.Println("PK exchange wasn't done")
+	fmt.Println("server is listening to: ", addr)
+	fmt.Println("...")
+	fmt.Println("...")
+	var opts []grpc.ServerOption
+	grpcSecureServer = grpc.NewServer(opts...)
+	pb.RegisterSecureConnectServer(grpcSecureServer, newSecureConnectServer())
+	grpcSecureServer.Serve(lis)
 }
 
-func StopServer() {
-	grpcServer.GracefulStop()
-}
-
-func AddCompanion(instance_id string, instance_ip string) {
-	companions[instance_id] = instance_ip
-}
-
-func StopSecureServerAfter(delay int) {
+func StopInsecureServerAfter(delay int) {
 	fmt.Println("server: stopping insecure server after", delay, "seconds")
 	time.Sleep(time.Duration(delay) * time.Second)
 
-	grpcServer.GracefulStop()
+	grpcInsecureServer.GracefulStop()
 	fmt.Println("server: stopped insecure server")
 }

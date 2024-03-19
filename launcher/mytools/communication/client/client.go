@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/google/go-tpm-tools/mytools/communication/common/proto/connect"
-	"github.com/google/go-tpm-tools/mytools/showwg0"
+	pb "github.com/google/go-tpm-tools/launcher/mytools/communication/proto/connect"
+	"github.com/google/go-tpm-tools/launcher/mytools/showwg0"
 )
 
 func RequestPSK(serverAddr string) {

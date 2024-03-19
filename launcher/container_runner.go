@@ -517,7 +517,7 @@ func defaultRetryPolicy() *backoff.ExponentialBackOff {
 
 // Run the container
 // Container output will always be redirected to logger writer for now
-func (r *ContainerRunner) Run(ctx context.Context) error {
+func (r *ContainerRunner) Run(ctx context.Context, arg_optional ...string) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
