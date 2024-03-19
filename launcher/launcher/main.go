@@ -34,6 +34,7 @@ import (
 
 var (
 	stage = flag.String("stage", "l1", "l1: launcher stage 1: p1: primary instance stage 1; c1: companion instance stage 1/2")
+	debug = flag.Bool("debug", false, "debug mode on or off")
 )
 
 const (
@@ -75,7 +76,7 @@ func main() {
 		fmt.Println("Step 1: Setup VPN wireguard interface so the public key is readily available.")
 		wg_port = 51820
 		my_ip = getOutboundIP()
-		ppk, err := setupwg0.SetupWgInterface("192.168.0.1/24", wg_port)
+		ppk, err := setupwg0.SetupWgInterface("192.168.0.1/24", wg_port, *debug)
 		my_public_key = *ppk
 		if err != nil {
 			fmt.Printf("%v", err)
@@ -104,7 +105,7 @@ func main() {
 		// Step 1: Setup VPN wireguard interface so the public key is readily available.
 		fmt.Println("Step 1: Setup VPN wireguard interface so the public key is readily available.")
 		wg_port = 51820
-		ppk, err := setupwg0.SetupWgInterface("192.168.0.2/24", wg_port)
+		ppk, err := setupwg0.SetupWgInterface("192.168.0.2/24", wg_port, *debug)
 		my_public_key = *ppk
 		my_ip := getOutboundIP()
 		if err != nil {
@@ -226,8 +227,8 @@ func main() {
 		// VPM wireguard subnet decided by us. x.x.x.1 for primary instance and subsequent for companion instances.
 		secure_server_addr := fmt.Sprintf("192.168.0.1:%d", wg_port)
 		// Step 4: Request PSK key, certificates etc. from server(primary instance)
-		fmt.Println("sleeping for 20 secs before requesting PSK")
-		time.Sleep(time.Duration(20) * time.Second)
+		fmt.Println("sleeping for 5 secs before requesting PSK")
+		time.Sleep(time.Duration(5) * time.Second)
 		fmt.Println("Step 4: Request PSK key, certificates etc. from server(primary instance)")
 		comm_client.RequestPSK(secure_server_addr)
 	}

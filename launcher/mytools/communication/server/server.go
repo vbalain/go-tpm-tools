@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc"
 
 	pb "github.com/google/go-tpm-tools/launcher/mytools/communication/proto/connect"
@@ -39,7 +40,7 @@ func (s *InsecureConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.
 	wg_port := 51820
 	configurewg0.ConfigurePeer(peer_public_key, peer_ip, wg_port, "192.168.0.2/32", true)
 
-	go StopInsecureServerAfter(10)
+	go StopInsecureServerAfter(5)
 
 	key := primaryPublicKey
 	fmt.Println("server: response: ending public key: ", key)
@@ -74,7 +75,11 @@ func StartInsecureConnectServer(addr string, ppk_optional ...string) {
 
 func (s *SecureConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*pb.PskResponse, error) {
 	result := true
-	key := "xwHuPhl5gw5rUhOToxCB2UEuI3JhQWOi8kVuxcI4inY=" // dummy key string for now
+	pskKey, err := wgtypes.GenerateKey()
+	if err != nil {
+		return nil, fmt.Errorf("wgtypes: failed to generate psk key: %v", err)
+	}
+	key := pskKey.String()
 	fmt.Println("server: sending PSK key: ", key)
 	showwg0.ShowConfig()
 	return &pb.PskResponse{Success: &result, Key: &key}, nil

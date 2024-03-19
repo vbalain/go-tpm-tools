@@ -75,9 +75,3 @@ func getOutboundIP() string {
 
 	return localAddr.IP.String()
 }
-
-// func main() {
-// 	flag.Parse()
-// 	RequestPublicKeyFromPrimary(*insecureAddr)
-// 	RequestPSK(*secureAddr)
-// }

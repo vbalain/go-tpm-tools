@@ -9,41 +9,28 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func initCommands(wgSubnet string, wgPort int) {
-	cmd := exec.Command("/bin/sh", "-c", "sudo ip link add dev wg0 type wireguard")
-	fmt.Println("running cmd:", cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(out, err)
-	}
-	cmd = exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo ip address add dev wg0 %s", wgSubnet))
-	fmt.Println("running cmd:", cmd)
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(out, err)
-	}
-	cmd = exec.Command("/bin/sh", "-c", "sudo iptables -I INPUT 1 -i wg0 -j ACCEPT")
-	fmt.Println("running cmd:", cmd)
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(out, err)
-	}
-	cmd = exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo /sbin/iptables -A INPUT -p udp --dport %d -j ACCEPT", wgPort))
-	fmt.Println("running cmd:", cmd)
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(out, err)
-	}
-	cmd = exec.Command("/bin/sh", "-c", "sudo ip link set up dev wg0")
-	fmt.Println("running cmd:", cmd)
-	out, err = cmd.CombinedOutput()
-	if err != nil {
+var debugEnabled bool
+
+func runShellCommand(cmd string) {
+	execCmd := exec.Command("/bin/sh", "-c", cmd)
+	fmt.Println("running shell command:", execCmd)
+	out, err := execCmd.CombinedOutput()
+	if debugEnabled && err != nil {
 		fmt.Println(out, err)
 	}
 }
 
-func SetupWgInterface(wgSubnet string, wgPort int) (*string, error) {
+func initCommands(wgSubnet string, wgPort int) {
+	runShellCommand("sudo ip link add dev wg0 type wireguard")
+	runShellCommand(fmt.Sprintf("sudo ip address add dev wg0 %s", wgSubnet))
+	runShellCommand("sudo iptables -I INPUT 1 -i wg0 -j ACCEPT")
+	runShellCommand(fmt.Sprintf("sudo /sbin/iptables -A INPUT -p udp --dport %d -j ACCEPT", wgPort))
+	runShellCommand("sudo ip link set up dev wg0")
+}
+
+func SetupWgInterface(wgSubnet string, wgPort int, debug bool) (*string, error) {
 	fmt.Println("SetupWgInterface")
+	debugEnabled = debug
 
 	initCommands(wgSubnet, wgPort)
 
@@ -52,13 +39,6 @@ func SetupWgInterface(wgSubnet string, wgPort int) (*string, error) {
 		return nil, fmt.Errorf("wgtypes: failed to generate private key: %v", err)
 	}
 	publicKey := privateKey.PublicKey()
-	pskKey, err := wgtypes.GenerateKey()
-	if err != nil {
-		return nil, fmt.Errorf("wgtypes: failed to generate psk key: %v", err)
-	}
-	fmt.Println("(1) publicKey, privateKey, pskKey: ", publicKey, privateKey, pskKey)
-	fmt.Println("(1s) publicKey: ", publicKey.String())
-
 	listenPort := 51820
 	fireWallMask := 0
 	cfg := wgtypes.Config{
