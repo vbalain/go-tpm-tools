@@ -14,6 +14,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/compute/metadata"
@@ -69,6 +70,8 @@ var my_public_key string
 func main() {
 	flag.Parse()
 
+	var wg sync.WaitGroup
+
 	if *stage == "p1" {
 		fmt.Println("Instance: Primary")
 
@@ -98,7 +101,8 @@ func main() {
 		// gRPC server(insecure) will be closed after an exchange between primary and companion.
 		// comm_server.AddCompanion(companion_instance_id, "")
 		fmt.Println("Step 3: Start gRPC server(insecure) to exchange public keys.")
-		comm_server.StartInsecureConnectServer(fmt.Sprintf(":%d", my_port), my_public_key)
+		wg.Add(1)
+		go comm_server.StartInsecureConnectServer(fmt.Sprintf(":%d", my_port), my_public_key)
 	} else if *stage == "c1" {
 		fmt.Println("Instance: Companion")
 
@@ -200,7 +204,8 @@ func main() {
 
 		// Step 5: Start gRPC server to exchange PSK and Certificates etc.
 		fmt.Println("Step 5: Start gRPC server to exchange PSK and Certificates etc.")
-		comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", wg_port))
+		wg.Add(1)
+		go comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", wg_port))
 	} else if *stage == "c1" {
 		// Step 2: Share Companion's public key with the Primary instance.
 		fmt.Println("Step 2: Share Companion's public key with the Primary instance.")
@@ -232,6 +237,8 @@ func main() {
 		fmt.Println("Step 4: Request PSK key, certificates etc. from server(primary instance)")
 		comm_client.RequestPSK(secure_server_addr)
 	}
+
+	wg.Wait()
 }
 
 func getOutboundIP() string {

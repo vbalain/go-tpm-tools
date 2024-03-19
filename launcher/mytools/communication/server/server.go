@@ -40,7 +40,7 @@ func (s *InsecureConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.
 	wg_port := 51820
 	configurewg0.ConfigurePeer(peer_public_key, peer_ip, wg_port, "192.168.0.2/32", true)
 
-	go StopInsecureServerAfter(5)
+	// go StopInsecureServerAfter(5)
 
 	key := primaryPublicKey
 	fmt.Println("server: response: ending public key: ", key)
