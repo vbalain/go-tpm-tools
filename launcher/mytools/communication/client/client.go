@@ -52,7 +52,7 @@ func SharePublicKeyWithPrimary(serverAddr string, myPublicKey string) (*string, 
 	fmt.Println("client: request: instance id: ", myInstanceId)
 	fmt.Println("client: request: instance ip: ", myIp)
 	req := pb.ExchangeRequest{Key: &myPublicKey, InstanceId: &myInstanceId}
-	res, err := client.ExchangePublicKeys(ctx, &req)
+	res, err := client.SharePublicKey(ctx, &req)
 	defer conn.Close()
 	defer cancel()
 	if err != nil {

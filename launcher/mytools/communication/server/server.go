@@ -28,7 +28,7 @@ func newDefaultConnectServer() *DefaultConnectServer {
 	return s
 }
 
-func (s *DefaultConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.ExchangeRequest) (*pb.ExchangeResponse, error) {
+func (s *DefaultConnectServer) SharePublicKey(ctx context.Context, req *pb.ExchangeRequest) (*pb.ExchangeResponse, error) {
 	result := true
 	fmt.Println("default server: request: public key: ", *(req.Key))
 	fmt.Println("default server: request: instance id: ", *(req.InstanceId))
@@ -37,7 +37,7 @@ func (s *DefaultConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.E
 	peer_public_key := *(req.Key)
 	peer_ip := "10.128.0.14"
 
-	fmt.Printf("\nStep 5: Configure VPN wireguard by adding peer/companion.\n\n")
+	fmt.Printf("\nSTEP 5: Configure VPN wireguard by adding peer/companion.\n\n")
 	wg_port := 51820
 	configurewg0.ConfigurePeer(peer_public_key, peer_ip, wg_port, "192.168.0.2/32", true)
 

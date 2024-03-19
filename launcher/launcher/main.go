@@ -103,6 +103,12 @@ func main() {
 		fmt.Printf("\nSTEP 3: Start gRPC server to exchange public keys.\n\n")
 		wg.Add(1)
 		go comm_server.StartDefaultConnectServer(fmt.Sprintf(":%d", my_port), my_public_key)
+
+		// Step 4: Start gRPC server to exchange PSK and Certificates etc.
+		fmt.Printf("\nSTEP 4: Start gRPC server(wg) to exchange PSK and Certificates etc.\n\n")
+		time.Sleep(time.Duration(1) * time.Second)
+		wg.Add(1)
+		go comm_server.StartWgConnectServer(fmt.Sprintf(":%d", wg_port))
 	} else if *stage == "c1" {
 		fmt.Println("Instance: Companion")
 
@@ -191,6 +197,7 @@ func main() {
 				logger.Printf("%s, exit code: %d\n", exitMessage, exitCode)
 			}
 		}()
+		fmt.Printf("StartLauncher -> container_runner -> companion_manager server should have written companion instance ID/Name and IPs.\n\n")
 		if err = startLauncher(launchSpec, serialConsole, my_public_key, my_ip); err != nil {
 			logger.Println(err)
 		}
@@ -198,15 +205,7 @@ func main() {
 		exitCode = getExitCode(launchSpec.Hardened, launchSpec.RestartPolicy, err)
 	}
 
-	if *stage == "p1" {
-		// Step 4: StartLauncher -> container_runner -> companion_manager server should have written companion instance ID/Name and IPs.
-		fmt.Printf("\nSTEP 4: StartLauncher -> container_runner -> companion_manager server should have written companion instance ID/Name and IPs.\n\n")
-
-		// Step 5: Start gRPC server to exchange PSK and Certificates etc.
-		fmt.Printf("\nSTEP 5: Start gRPC server(wg) to exchange PSK and Certificates etc.\n\n")
-		wg.Add(1)
-		go comm_server.StartWgConnectServer(fmt.Sprintf(":%d", wg_port))
-	} else if *stage == "c1" {
+	if *stage == "c1" {
 		// Step 2: Share Companion's public key with the Primary instance.
 		fmt.Printf("\nSTEP 2: Share Companion's public key with the Primary instance.\n\n")
 		// Primary instance public key, IP etc. should be available from metadata when launching companion instances.

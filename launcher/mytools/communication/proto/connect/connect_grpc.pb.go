@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	DefaultConnect_ExchangePublicKeys_FullMethodName = "/connect.DefaultConnect/ExchangePublicKeys"
+	DefaultConnect_SharePublicKey_FullMethodName = "/connect.DefaultConnect/SharePublicKey"
 )
 
 // DefaultConnectClient is the client API for DefaultConnect service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DefaultConnectClient interface {
-	ExchangePublicKeys(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*ExchangeResponse, error)
+	SharePublicKey(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*ExchangeResponse, error)
 }
 
 type defaultConnectClient struct {
@@ -37,9 +37,9 @@ func NewDefaultConnectClient(cc grpc.ClientConnInterface) DefaultConnectClient {
 	return &defaultConnectClient{cc}
 }
 
-func (c *defaultConnectClient) ExchangePublicKeys(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*ExchangeResponse, error) {
+func (c *defaultConnectClient) SharePublicKey(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*ExchangeResponse, error) {
 	out := new(ExchangeResponse)
-	err := c.cc.Invoke(ctx, DefaultConnect_ExchangePublicKeys_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, DefaultConnect_SharePublicKey_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (c *defaultConnectClient) ExchangePublicKeys(ctx context.Context, in *Excha
 // All implementations must embed UnimplementedDefaultConnectServer
 // for forward compatibility
 type DefaultConnectServer interface {
-	ExchangePublicKeys(context.Context, *ExchangeRequest) (*ExchangeResponse, error)
+	SharePublicKey(context.Context, *ExchangeRequest) (*ExchangeResponse, error)
 	mustEmbedUnimplementedDefaultConnectServer()
 }
 
@@ -58,8 +58,8 @@ type DefaultConnectServer interface {
 type UnimplementedDefaultConnectServer struct {
 }
 
-func (UnimplementedDefaultConnectServer) ExchangePublicKeys(context.Context, *ExchangeRequest) (*ExchangeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExchangePublicKeys not implemented")
+func (UnimplementedDefaultConnectServer) SharePublicKey(context.Context, *ExchangeRequest) (*ExchangeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SharePublicKey not implemented")
 }
 func (UnimplementedDefaultConnectServer) mustEmbedUnimplementedDefaultConnectServer() {}
 
@@ -74,20 +74,20 @@ func RegisterDefaultConnectServer(s grpc.ServiceRegistrar, srv DefaultConnectSer
 	s.RegisterService(&DefaultConnect_ServiceDesc, srv)
 }
 
-func _DefaultConnect_ExchangePublicKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _DefaultConnect_SharePublicKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ExchangeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DefaultConnectServer).ExchangePublicKeys(ctx, in)
+		return srv.(DefaultConnectServer).SharePublicKey(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DefaultConnect_ExchangePublicKeys_FullMethodName,
+		FullMethod: DefaultConnect_SharePublicKey_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DefaultConnectServer).ExchangePublicKeys(ctx, req.(*ExchangeRequest))
+		return srv.(DefaultConnectServer).SharePublicKey(ctx, req.(*ExchangeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -100,8 +100,8 @@ var DefaultConnect_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*DefaultConnectServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ExchangePublicKeys",
-			Handler:    _DefaultConnect_ExchangePublicKeys_Handler,
+			MethodName: "SharePublicKey",
+			Handler:    _DefaultConnect_SharePublicKey_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

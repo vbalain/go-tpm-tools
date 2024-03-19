@@ -6,7 +6,7 @@ option go_package = "github.com/vbalain/go-tpm-tools/launcher/mytools/communicat
 
 // Interface exported by the server.
 service DefaultConnect {
-  rpc ExchangePublicKeys(ExchangeRequest) returns (ExchangeResponse) {}
+  rpc SharePublicKey(ExchangeRequest) returns (ExchangeResponse) {}
 }
 
 // Interface exported by the server.
