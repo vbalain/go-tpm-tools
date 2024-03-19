@@ -30,7 +30,7 @@ func RequestPSK(serverAddr string) {
 	defer cancel()
 	res, err := client.GetPSK(ctx, &req)
 	if err != nil {
-		fmt.Printf("failed to receive response from server: %v", err)
+		fmt.Printf("failed to receive response from secure server: %v", err)
 	}
 	fmt.Println("client(secure): received PSK key: ", *(res.Key))
 	showwg0.ShowConfig()
@@ -56,7 +56,7 @@ func SharePublicKeyWithPrimary(serverAddr string, myPublicKey string) (*string, 
 	defer conn.Close()
 	defer cancel()
 	if err != nil {
-		return nil, fmt.Errorf("failed to receive response from server: %v", err)
+		return nil, fmt.Errorf("failed to receive response from insecure server: %v", err)
 	}
 	fmt.Println("client: received public key: ", *(res.Key))
 
