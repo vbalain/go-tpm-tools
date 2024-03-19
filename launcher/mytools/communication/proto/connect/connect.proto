@@ -5,12 +5,12 @@ package connect;
 option go_package = "github.com/vbalain/go-tpm-tools/launcher/mytools/communication/proto/connect";
 
 // Interface exported by the server.
-service InsecureConnect {
+service DefaultConnect {
   rpc ExchangePublicKeys(ExchangeRequest) returns (ExchangeResponse) {}
 }
 
 // Interface exported by the server.
-service SecureConnect {
+service WgConnect {
   rpc GetPSK(PskRequest) returns (PskResponse) {}
 }
 

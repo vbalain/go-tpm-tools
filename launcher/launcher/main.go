@@ -97,12 +97,12 @@ func main() {
 			fmt.Println(out, err)
 		}
 
-		// Step 3: Start gRPC server(insecure) to exchange public keys.
-		// gRPC server(insecure) will be closed after an exchange between primary and companion.
+		// Step 3: Start gRPC server to exchange public keys.
+		// gRPC server will be closed after an exchange between primary and companion.
 		// comm_server.AddCompanion(companion_instance_id, "")
-		fmt.Println("Step 3: Start gRPC server(insecure) to exchange public keys.")
+		fmt.Println("Step 3: Start gRPC server to exchange public keys.")
 		wg.Add(1)
-		go comm_server.StartInsecureConnectServer(fmt.Sprintf(":%d", my_port), my_public_key)
+		go comm_server.StartDefaultConnectServer(fmt.Sprintf(":%d", my_port), my_public_key)
 	} else if *stage == "c1" {
 		fmt.Println("Instance: Companion")
 
@@ -203,9 +203,9 @@ func main() {
 		fmt.Println("Step 4: StartLauncher -> container_runner -> companion_manager server should have written companion instance ID/Name and IPs.")
 
 		// Step 5: Start gRPC server to exchange PSK and Certificates etc.
-		fmt.Println("Step 5: Start gRPC server to exchange PSK and Certificates etc.")
+		fmt.Println("Step 5: Start gRPC server(wg) to exchange PSK and Certificates etc.")
 		wg.Add(1)
-		go comm_server.StartSecureConnectServer(fmt.Sprintf(":%d", wg_port))
+		go comm_server.StartWgConnectServer(fmt.Sprintf(":%d", wg_port))
 	} else if *stage == "c1" {
 		// Step 2: Share Companion's public key with the Primary instance.
 		fmt.Println("Step 2: Share Companion's public key with the Primary instance.")

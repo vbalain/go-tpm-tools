@@ -19,89 +19,89 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	InsecureConnect_ExchangePublicKeys_FullMethodName = "/connect.InsecureConnect/ExchangePublicKeys"
+	DefaultConnect_ExchangePublicKeys_FullMethodName = "/connect.DefaultConnect/ExchangePublicKeys"
 )
 
-// InsecureConnectClient is the client API for InsecureConnect service.
+// DefaultConnectClient is the client API for DefaultConnect service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type InsecureConnectClient interface {
+type DefaultConnectClient interface {
 	ExchangePublicKeys(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*ExchangeResponse, error)
 }
 
-type insecureConnectClient struct {
+type defaultConnectClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewInsecureConnectClient(cc grpc.ClientConnInterface) InsecureConnectClient {
-	return &insecureConnectClient{cc}
+func NewDefaultConnectClient(cc grpc.ClientConnInterface) DefaultConnectClient {
+	return &defaultConnectClient{cc}
 }
 
-func (c *insecureConnectClient) ExchangePublicKeys(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*ExchangeResponse, error) {
+func (c *defaultConnectClient) ExchangePublicKeys(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*ExchangeResponse, error) {
 	out := new(ExchangeResponse)
-	err := c.cc.Invoke(ctx, InsecureConnect_ExchangePublicKeys_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, DefaultConnect_ExchangePublicKeys_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// InsecureConnectServer is the server API for InsecureConnect service.
-// All implementations must embed UnimplementedInsecureConnectServer
+// DefaultConnectServer is the server API for DefaultConnect service.
+// All implementations must embed UnimplementedDefaultConnectServer
 // for forward compatibility
-type InsecureConnectServer interface {
+type DefaultConnectServer interface {
 	ExchangePublicKeys(context.Context, *ExchangeRequest) (*ExchangeResponse, error)
-	mustEmbedUnimplementedInsecureConnectServer()
+	mustEmbedUnimplementedDefaultConnectServer()
 }
 
-// UnimplementedInsecureConnectServer must be embedded to have forward compatible implementations.
-type UnimplementedInsecureConnectServer struct {
+// UnimplementedDefaultConnectServer must be embedded to have forward compatible implementations.
+type UnimplementedDefaultConnectServer struct {
 }
 
-func (UnimplementedInsecureConnectServer) ExchangePublicKeys(context.Context, *ExchangeRequest) (*ExchangeResponse, error) {
+func (UnimplementedDefaultConnectServer) ExchangePublicKeys(context.Context, *ExchangeRequest) (*ExchangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExchangePublicKeys not implemented")
 }
-func (UnimplementedInsecureConnectServer) mustEmbedUnimplementedInsecureConnectServer() {}
+func (UnimplementedDefaultConnectServer) mustEmbedUnimplementedDefaultConnectServer() {}
 
-// UnsafeInsecureConnectServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to InsecureConnectServer will
+// UnsafeDefaultConnectServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to DefaultConnectServer will
 // result in compilation errors.
-type UnsafeInsecureConnectServer interface {
-	mustEmbedUnimplementedInsecureConnectServer()
+type UnsafeDefaultConnectServer interface {
+	mustEmbedUnimplementedDefaultConnectServer()
 }
 
-func RegisterInsecureConnectServer(s grpc.ServiceRegistrar, srv InsecureConnectServer) {
-	s.RegisterService(&InsecureConnect_ServiceDesc, srv)
+func RegisterDefaultConnectServer(s grpc.ServiceRegistrar, srv DefaultConnectServer) {
+	s.RegisterService(&DefaultConnect_ServiceDesc, srv)
 }
 
-func _InsecureConnect_ExchangePublicKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _DefaultConnect_ExchangePublicKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ExchangeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InsecureConnectServer).ExchangePublicKeys(ctx, in)
+		return srv.(DefaultConnectServer).ExchangePublicKeys(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: InsecureConnect_ExchangePublicKeys_FullMethodName,
+		FullMethod: DefaultConnect_ExchangePublicKeys_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InsecureConnectServer).ExchangePublicKeys(ctx, req.(*ExchangeRequest))
+		return srv.(DefaultConnectServer).ExchangePublicKeys(ctx, req.(*ExchangeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// InsecureConnect_ServiceDesc is the grpc.ServiceDesc for InsecureConnect service.
+// DefaultConnect_ServiceDesc is the grpc.ServiceDesc for DefaultConnect service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var InsecureConnect_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "connect.InsecureConnect",
-	HandlerType: (*InsecureConnectServer)(nil),
+var DefaultConnect_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "connect.DefaultConnect",
+	HandlerType: (*DefaultConnectServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ExchangePublicKeys",
-			Handler:    _InsecureConnect_ExchangePublicKeys_Handler,
+			Handler:    _DefaultConnect_ExchangePublicKeys_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -109,89 +109,89 @@ var InsecureConnect_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	SecureConnect_GetPSK_FullMethodName = "/connect.SecureConnect/GetPSK"
+	WgConnect_GetPSK_FullMethodName = "/connect.WgConnect/GetPSK"
 )
 
-// SecureConnectClient is the client API for SecureConnect service.
+// WgConnectClient is the client API for WgConnect service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SecureConnectClient interface {
+type WgConnectClient interface {
 	GetPSK(ctx context.Context, in *PskRequest, opts ...grpc.CallOption) (*PskResponse, error)
 }
 
-type secureConnectClient struct {
+type wgConnectClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewSecureConnectClient(cc grpc.ClientConnInterface) SecureConnectClient {
-	return &secureConnectClient{cc}
+func NewWgConnectClient(cc grpc.ClientConnInterface) WgConnectClient {
+	return &wgConnectClient{cc}
 }
 
-func (c *secureConnectClient) GetPSK(ctx context.Context, in *PskRequest, opts ...grpc.CallOption) (*PskResponse, error) {
+func (c *wgConnectClient) GetPSK(ctx context.Context, in *PskRequest, opts ...grpc.CallOption) (*PskResponse, error) {
 	out := new(PskResponse)
-	err := c.cc.Invoke(ctx, SecureConnect_GetPSK_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, WgConnect_GetPSK_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// SecureConnectServer is the server API for SecureConnect service.
-// All implementations must embed UnimplementedSecureConnectServer
+// WgConnectServer is the server API for WgConnect service.
+// All implementations must embed UnimplementedWgConnectServer
 // for forward compatibility
-type SecureConnectServer interface {
+type WgConnectServer interface {
 	GetPSK(context.Context, *PskRequest) (*PskResponse, error)
-	mustEmbedUnimplementedSecureConnectServer()
+	mustEmbedUnimplementedWgConnectServer()
 }
 
-// UnimplementedSecureConnectServer must be embedded to have forward compatible implementations.
-type UnimplementedSecureConnectServer struct {
+// UnimplementedWgConnectServer must be embedded to have forward compatible implementations.
+type UnimplementedWgConnectServer struct {
 }
 
-func (UnimplementedSecureConnectServer) GetPSK(context.Context, *PskRequest) (*PskResponse, error) {
+func (UnimplementedWgConnectServer) GetPSK(context.Context, *PskRequest) (*PskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPSK not implemented")
 }
-func (UnimplementedSecureConnectServer) mustEmbedUnimplementedSecureConnectServer() {}
+func (UnimplementedWgConnectServer) mustEmbedUnimplementedWgConnectServer() {}
 
-// UnsafeSecureConnectServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to SecureConnectServer will
+// UnsafeWgConnectServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to WgConnectServer will
 // result in compilation errors.
-type UnsafeSecureConnectServer interface {
-	mustEmbedUnimplementedSecureConnectServer()
+type UnsafeWgConnectServer interface {
+	mustEmbedUnimplementedWgConnectServer()
 }
 
-func RegisterSecureConnectServer(s grpc.ServiceRegistrar, srv SecureConnectServer) {
-	s.RegisterService(&SecureConnect_ServiceDesc, srv)
+func RegisterWgConnectServer(s grpc.ServiceRegistrar, srv WgConnectServer) {
+	s.RegisterService(&WgConnect_ServiceDesc, srv)
 }
 
-func _SecureConnect_GetPSK_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _WgConnect_GetPSK_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PskRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SecureConnectServer).GetPSK(ctx, in)
+		return srv.(WgConnectServer).GetPSK(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SecureConnect_GetPSK_FullMethodName,
+		FullMethod: WgConnect_GetPSK_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SecureConnectServer).GetPSK(ctx, req.(*PskRequest))
+		return srv.(WgConnectServer).GetPSK(ctx, req.(*PskRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// SecureConnect_ServiceDesc is the grpc.ServiceDesc for SecureConnect service.
+// WgConnect_ServiceDesc is the grpc.ServiceDesc for WgConnect service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var SecureConnect_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "connect.SecureConnect",
-	HandlerType: (*SecureConnectServer)(nil),
+var WgConnect_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "connect.WgConnect",
+	HandlerType: (*WgConnectServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetPSK",
-			Handler:    _SecureConnect_GetPSK_Handler,
+			Handler:    _WgConnect_GetPSK_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

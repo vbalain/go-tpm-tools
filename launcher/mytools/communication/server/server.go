@@ -15,22 +15,23 @@ import (
 	"github.com/google/go-tpm-tools/launcher/mytools/showwg0"
 )
 
-var grpcInsecureServer *grpc.Server
-var grpcSecureServer *grpc.Server
+var grpcDefaultServer *grpc.Server
+var grpcWgServer *grpc.Server
 var primaryPublicKey string
 
-type SecureConnectServer struct {
-	pb.UnimplementedSecureConnectServer
+type DefaultConnectServer struct {
+	pb.UnimplementedDefaultConnectServer
 }
 
-type InsecureConnectServer struct {
-	pb.UnimplementedInsecureConnectServer
+func newDefaultConnectServer() *DefaultConnectServer {
+	s := &DefaultConnectServer{}
+	return s
 }
 
-func (s *InsecureConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.ExchangeRequest) (*pb.ExchangeResponse, error) {
+func (s *DefaultConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.ExchangeRequest) (*pb.ExchangeResponse, error) {
 	result := true
-	fmt.Println("server: request: public key: ", *(req.Key))
-	fmt.Println("server: request: instance id: ", *(req.InstanceId))
+	fmt.Println("default server: request: public key: ", *(req.Key))
+	fmt.Println("default server: request: instance id: ", *(req.InstanceId))
 
 	// Read from file(written by companion_manager server) companion IP via instance ID
 	peer_public_key := *(req.Key)
@@ -40,75 +41,70 @@ func (s *InsecureConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.
 	wg_port := 51820
 	configurewg0.ConfigurePeer(peer_public_key, peer_ip, wg_port, "192.168.0.2/32", true)
 
-	// go StopInsecureServerAfter(5)
-
 	key := primaryPublicKey
-	fmt.Println("server: response: ending public key: ", key)
+	fmt.Println("default server: response: ending public key: ", key)
 	return &pb.ExchangeResponse{Success: &result, Key: &key}, nil
 }
 
-func newInsecureConnectServer() *InsecureConnectServer {
-	s := &InsecureConnectServer{}
-	return s
-}
-
-func StartInsecureConnectServer(addr string, ppk_optional ...string) {
+func StartDefaultConnectServer(addr string, ppk_optional ...string) {
 	if len(ppk_optional) > 0 {
 		primaryPublicKey = ppk_optional[0]
 	} else {
 		primaryPublicKey = ""
 	}
 
-	fmt.Println("StartInsecureConnectServer")
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	fmt.Println("server is listening to: ", addr)
+	fmt.Println("default server is listening to: ", addr)
 	fmt.Println("...")
 	fmt.Println("...")
 	var opts []grpc.ServerOption
-	grpcInsecureServer = grpc.NewServer(opts...)
-	pb.RegisterInsecureConnectServer(grpcInsecureServer, newInsecureConnectServer())
-	grpcInsecureServer.Serve(lis)
+	grpcDefaultServer = grpc.NewServer(opts...)
+	pb.RegisterDefaultConnectServer(grpcDefaultServer, newDefaultConnectServer())
+	grpcDefaultServer.Serve(lis)
 }
 
-func (s *SecureConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*pb.PskResponse, error) {
+type WgConnectServer struct {
+	pb.UnimplementedWgConnectServer
+}
+
+func newWgConnectServer() *WgConnectServer {
+	s := &WgConnectServer{}
+	return s
+}
+
+func (s *WgConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*pb.PskResponse, error) {
 	result := true
 	pskKey, err := wgtypes.GenerateKey()
 	if err != nil {
 		return nil, fmt.Errorf("wgtypes: failed to generate psk key: %v", err)
 	}
 	key := pskKey.String()
-	fmt.Println("server: sending PSK key: ", key)
+	fmt.Println("wg server: sending PSK key: ", key)
 	showwg0.ShowConfig()
 	return &pb.PskResponse{Success: &result, Key: &key}, nil
 }
 
-func newSecureConnectServer() *SecureConnectServer {
-	s := &SecureConnectServer{}
-	return s
-}
-
-func StartSecureConnectServer(addr string) {
-	fmt.Println("StartSecureConnectServer")
+func StartWgConnectServer(addr string) {
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	fmt.Println("server is listening to: ", addr)
+	fmt.Println("wg server is listening to: ", addr)
 	fmt.Println("...")
 	fmt.Println("...")
 	var opts []grpc.ServerOption
-	grpcSecureServer = grpc.NewServer(opts...)
-	pb.RegisterSecureConnectServer(grpcSecureServer, newSecureConnectServer())
-	grpcSecureServer.Serve(lis)
+	grpcWgServer = grpc.NewServer(opts...)
+	pb.RegisterWgConnectServer(grpcWgServer, newWgConnectServer())
+	grpcWgServer.Serve(lis)
 }
 
-func StopInsecureServerAfter(delay int) {
-	fmt.Println("server: stopping insecure server after", delay, "seconds")
+func StopDefaultServerAfter(delay int) {
+	fmt.Println("default server: stopping server after", delay, "seconds")
 	time.Sleep(time.Duration(delay) * time.Second)
 
-	grpcInsecureServer.GracefulStop()
-	fmt.Println("server: stopped insecure server")
+	grpcDefaultServer.GracefulStop()
+	fmt.Println("default server: stopped server")
 }

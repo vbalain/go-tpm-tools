@@ -15,16 +15,16 @@ import (
 )
 
 func RequestPSK(serverAddr string) {
-	fmt.Println("Exchange Pre-shared Keys and Certs")
+	fmt.Println("(wg)Exchange Pre-shared Keys and Certs")
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	fmt.Println("client: dialing to: ", serverAddr)
+	fmt.Println("client(wg): dialing to: ", serverAddr)
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
 	defer conn.Close()
-	client := pb.NewSecureConnectClient(conn)
+	client := pb.NewWgConnectClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	req := pb.PskRequest{}
 	defer cancel()
@@ -32,7 +32,7 @@ func RequestPSK(serverAddr string) {
 	if err != nil {
 		fmt.Printf("failed to receive response from secure server: %v", err)
 	}
-	fmt.Println("client(secure): received PSK key: ", *(res.Key))
+	fmt.Println("client(wg): received PSK key: ", *(res.Key))
 	showwg0.ShowConfig()
 }
 
@@ -44,7 +44,7 @@ func SharePublicKeyWithPrimary(serverAddr string, myPublicKey string) (*string, 
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
-	client := pb.NewInsecureConnectClient(conn)
+	client := pb.NewDefaultConnectClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	myInstanceId := "companion1"
 	myIp := getOutboundIP()
