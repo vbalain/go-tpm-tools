@@ -30,6 +30,7 @@ func newDefaultConnectServer() *DefaultConnectServer {
 
 func (s *DefaultConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.ExchangeRequest) (*pb.ExchangeResponse, error) {
 	result := true
+	fmt.Printf("\n")
 	fmt.Println("default server: request: public key: ", *(req.Key))
 	fmt.Println("default server: request: instance id: ", *(req.InstanceId))
 
@@ -47,6 +48,7 @@ func (s *DefaultConnectServer) ExchangePublicKeys(ctx context.Context, req *pb.E
 }
 
 func StartDefaultConnectServer(addr string, ppk_optional ...string) {
+	fmt.Printf("\n")
 	if len(ppk_optional) > 0 {
 		primaryPublicKey = ppk_optional[0]
 	} else {
@@ -76,6 +78,7 @@ func newWgConnectServer() *WgConnectServer {
 }
 
 func (s *WgConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*pb.PskResponse, error) {
+	fmt.Printf("\n")
 	result := true
 	pskKey, err := wgtypes.GenerateKey()
 	if err != nil {
@@ -88,6 +91,7 @@ func (s *WgConnectServer) GetPSK(ctx context.Context, request *pb.PskRequest) (*
 }
 
 func StartWgConnectServer(addr string) {
+	fmt.Printf("\n")
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -102,6 +106,7 @@ func StartWgConnectServer(addr string) {
 }
 
 func StopDefaultServerAfter(delay int) {
+	fmt.Printf("\n")
 	fmt.Println("default server: stopping server after", delay, "seconds")
 	time.Sleep(time.Duration(delay) * time.Second)
 
